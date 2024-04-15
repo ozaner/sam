@@ -77,7 +77,7 @@ function SamJs (options) {
    * @param {string}  text       The text to render or phoneme string.
    * @param {boolean} [phonetic] Flag if the input text is already phonetic data.
    * 
-   * @return {Uint8Array}
+   * @return {Uint8Array|false}
    */
   this.wav = (text, phonetic) => ToWavBuffer(this.buf8(text, phonetic));
 }
