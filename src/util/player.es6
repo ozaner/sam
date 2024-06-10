@@ -3,7 +3,7 @@ import {text2Uint8Array, Uint32ToUint8Array, Uint16ToUint8Array} from '../util/u
 /**
  *
  * @param {AudioContext} context
- * @param audiobuffer
+ * @param {Float32Array} audiobuffer
  *
  * @return {Promise}
  */
