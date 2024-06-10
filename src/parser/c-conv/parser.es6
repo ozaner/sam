@@ -82,11 +82,11 @@ function wild_match (sign1) {
  * Repeat until the <0x9B> character is reached:
  *
  *        First, a search is made for a 2 character match for phonemes that do not
- *        end with the '*' (wildcard) character. On a match, the index of the phoneme
+ *        end with the '*' (single char mark) character. On a match, the index of the phoneme
  *        is added to phonemeIndex[] and the buffer position is advanced 2 bytes.
  *
  *        If this fails, a search is made for a 1 character match against all
- *        phoneme names ending with a '*' (wildcard). If this succeeds, the
+ *        phoneme names ending with a '*' (single char mark). If this succeeds, the
  *        phoneme is added to phonemeIndex[] and the buffer position is advanced
  *        1 byte.
  *
@@ -139,7 +139,7 @@ function Parser1(input, {phonemeindex, stress}) {
     sign2 = input[++srcpos];
     let match = 0;
     if ((match = full_match(sign1, sign2)) !== -1) {
-      // Matched both characters (no wildcards)
+      // Matched both characters (no single char mark)
       phonemeindex[position++] = match;
       ++srcpos; // Skip the second character of the input as we've matched it
     } else if ((match = wild_match(sign1)) !== -1) {

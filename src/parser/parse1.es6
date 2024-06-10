@@ -1,7 +1,7 @@
 import {PhonemeNameTable, StressTable} from './tables.es6';
 
 /**
- * Match both characters but not with wildcards.
+ * Match two character phoneme.
  *
  * @param {string} sign1
  * @param {string} sign2
@@ -15,12 +15,12 @@ const full_match = (sign1, sign2) => {
 }
 
 /**
- * Match character with wildcard.
+ * Match single character phoneme.
  *
  * @param {string} sign1
  * @return {boolean|Number}
  */
-const wild_match = (sign1) => {
+const single_match = (sign1) => {
   const index = PhonemeNameTable.findIndex((value) => {
     return (value === sign1 + '*')
   });
@@ -44,11 +44,11 @@ const wild_match = (sign1) => {
  *
  * Repeat until the end is reached:
  * 1. First, a search is made for a 2 character match for phonemes that do not
- *    end with the '*' (wildcard) character. On a match, the index of the phoneme
+ *    end with the '*' (single char mark) character. On a match, the index of the phoneme
  *    is added to the result and the buffer position is advanced 2 bytes.
  *
  * 2. If this fails, a search is made for a 1 character match against all
- *    phoneme names ending with a '*' (wildcard). If this succeeds, the
+ *    phoneme names ending with a '*' (single char mark). If this succeeds, the
  *    phoneme is added to result and the buffer position is advanced
  *    1 byte.
  *
@@ -94,12 +94,12 @@ export const Parser1 = (input, addPhoneme, addStress) => {
     let sign2 = input[srcPos + 1] || '';
     let match;
     if ((match = full_match(sign1, sign2)) !== false) {
-      // Matched both characters (no wildcards)
+      // Matched both characters (no single char mark)
       srcPos++; // Skip the second character of the input as we've matched it
       addPhoneme(match);
       continue;
     }
-    if ((match = wild_match(sign1)) !== false) {
+    if ((match = single_match(sign1)) !== false) {
       // Matched just the first character (with second character matching '*'
       addPhoneme(match);
       continue;
