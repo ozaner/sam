@@ -2,7 +2,7 @@ module.exports = function(config) {
   config.set({
     frameworks: ['mocha', 'browserify'],
     // You may use 'ChromeCanary', 'Chromium' or any other supported browser
-    browsers: ['ChromeHeadless', 'Chrome_without_security'],
+    browsers: ['Chrome_without_security'],
     browserDisconnectTimeout: 1000,
     // Need to bump these really high as it times out somehow.
     browserDisconnectTolerance: 2,
@@ -11,7 +11,7 @@ module.exports = function(config) {
     customLaunchers: {
       Chrome_without_security: {
         base: 'ChromeHeadless',
-        flags: ['--disable-web-security']
+        flags: ['--no-sandbox']
       }
     },
     files: [

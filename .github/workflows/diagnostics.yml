@@ -3,13 +3,14 @@ on:
   push:
       branches:
         - master
+        - release/*
 
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [ '14', '16' ]
+        node: [ '18', '20', '22' ]
         install: [ '', '--frozen-lockfile' ]
     name: Node ${{ matrix.node }}
     steps:
@@ -20,4 +21,3 @@ jobs:
           node-version: ${{ matrix.node }}
       - run: yarn install ${{ matrix.install }}
       - run: yarn test
-
