@@ -5,7 +5,7 @@ import {
   FLAG_RULESET2,
   FLAG_VOICED,
   FLAG_0X08,
-  FLAG_DIPTHONG,
+  FLAG_DIPHTHONG,
   FLAG_CONSONANT,
   FLAG_VOWEL_OR_Y,
   FLAG_ALPHA_OR_QUOT
@@ -88,8 +88,8 @@ const reciterRule = (ruleString) => {
           '#': () => flagsAt(text, --pos, FLAG_VOWEL_OR_Y),
           // '.' - unknown?
           '.': () => flagsAt(text, --pos, FLAG_0X08),
-          // '&' - previous char must be a dipthong or previous chars must be 'CH' or 'SH'
-          '&': () => (flagsAt(text, --pos, FLAG_DIPTHONG)) || (isOneOf(text.substr(--pos, 2), ['CH', 'SH'])),
+          // '&' - previous char must be a diphthong or previous chars must be 'CH' or 'SH'
+          '&': () => (flagsAt(text, --pos, FLAG_DIPHTHONG)) || (isOneOf(text.substr(--pos, 2), ['CH', 'SH'])),
           // '@' - previous char must be voiced and not 'H'.
           '@': () => {
             if (flagsAt(text, --pos, FLAG_VOICED)) {
@@ -153,8 +153,8 @@ const reciterRule = (ruleString) => {
           '#': () => flagsAt(text, ++pos, FLAG_VOWEL_OR_Y),
           // '.' - unknown?
           '.': () => flagsAt(text, ++pos, FLAG_0X08),
-          // '&' - next char must be a dipthong or next chars must be 'HC' or 'HS'
-          '&': () => flagsAt(text, ++pos, FLAG_DIPTHONG) || isOneOf(text.substr((++pos) - 2, 2), ['HC', 'HS']),
+          // '&' - next char must be a diphthong or next chars must be 'HC' or 'HS'
+          '&': () => flagsAt(text, ++pos, FLAG_DIPHTHONG) || isOneOf(text.substr((++pos) - 2, 2), ['HC', 'HS']),
           // '@' - next char must be voiced and not 'H'.
           '@': () => {
             if (flagsAt(text, ++pos, FLAG_VOICED)) {

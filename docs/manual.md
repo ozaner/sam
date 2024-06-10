@@ -426,14 +426,14 @@ same letters.
 | AX | g**a**llon |
 | IX | d**i**git  |
 
-|   DIPTHONGS    ||
-|----|------------|
-| EY | m**a**de   |
-| AY | h**igh**   |
-| OY | b**oy**    |
-| AW | h**ow**    |
-| OW | sl**ow**   |
-| UW | cr**ew**   |
+| DIPHTHONGS |          |
+|------------|----------|
+| EY         | m**a**de |
+| AY         | h**igh** |
+| OY         | b**oy**  |
+| AW         | h**ow**  |
+| OW         | sl**ow** |
+| UW         | cr**ew** |
 
 The following symbols are used internally by some of S.A.M.'s rules, but
 they are also available to the user.

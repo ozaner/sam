@@ -22,7 +22,7 @@ import {
   FLAG_VOWEL,
   FLAG_CONSONANT,
   FLAG_DIP_YX,
-  FLAG_DIPTHONG,
+  FLAG_DIPHTHONG,
   FLAG_0008,
   FLAG_VOICED,
   FLAG_STOPCONS,
@@ -193,8 +193,8 @@ function Insert({phonemeindex, phonemeLength, stress}, position, index, length, 
 /**
  * Rewrites the phonemes using the following rules:
  *
- * <DIPTHONG ENDING WITH WX> -> <DIPTHONG ENDING WITH WX> WX
- * <DIPTHONG NOT ENDING WITH WX> -> <DIPTHONG NOT ENDING WITH WX> YX
+ * <DIPHTHONG ENDING WITH WX> -> <DIPHTHONG ENDING WITH WX> WX
+ * <DIPHTHONG NOT ENDING WITH WX> -> <DIPHTHONG NOT ENDING WITH WX> YX
  * UL -> AX L
  * UM -> AX M
  * <STRESSED VOWEL> <SILENCE> <STRESSED VOWEL> -> <STRESSED VOWEL> <SILENCE> Q <VOWEL>
@@ -203,8 +203,8 @@ function Insert({phonemeindex, phonemeLength, stress}, position, index, length, 
  * <VOWEL> R -> <VOWEL> RX
  * <VOWEL> L -> <VOWEL> LX
  * G S -> G Z
- * K <VOWEL OR DIPTHONG NOT ENDING WITH IY> -> KX <VOWEL OR DIPTHONG NOT ENDING WITH IY>
- * G <VOWEL OR DIPTHONG NOT ENDING WITH IY> -> GX <VOWEL OR DIPTHONG NOT ENDING WITH IY>
+ * K <VOWEL OR DIPHTHONG NOT ENDING WITH IY> -> KX <VOWEL OR DIPHTHONG NOT ENDING WITH IY>
+ * G <VOWEL OR DIPHTHONG NOT ENDING WITH IY> -> GX <VOWEL OR DIPHTHONG NOT ENDING WITH IY>
  * S P -> S B
  * S T -> S D
  * S K -> S G
@@ -241,24 +241,24 @@ function Parser2({phonemeindex, phonemeLength, stress}) {
   };
 
   const rule_g = (pos) => {
-    // G <VOWEL OR DIPTHONG NOT ENDING WITH IY> -> GX <VOWEL OR DIPTHONG NOT ENDING WITH IY>
+    // G <VOWEL OR DIPHTHONG NOT ENDING WITH IY> -> GX <VOWEL OR DIPHTHONG NOT ENDING WITH IY>
     // Example: GO
 
     let index = phonemeindex[pos+1];
 
-    // If dipthong ending with YX, move continue processing next phoneme
+    // If diphthong ending with YX, move continue processing next phoneme
     if ((index !== 255) && ((flags[index] & FLAG_DIP_YX) === 0)) {
       // replace G with GX and continue processing next phoneme
       if (process.env.NODE_ENV === 'development') {
-        console.log(`${pos} RULE: G <VOWEL OR DIPTHONG NOT ENDING WITH IY> -> GX <VOWEL OR DIPTHONG NOT ENDING WITH IY>`);
+        console.log(`${pos} RULE: G <VOWEL OR DIPHTHONG NOT ENDING WITH IY> -> GX <VOWEL OR DIPHTHONG NOT ENDING WITH IY>`);
       }
       phonemeindex[pos] = 63; // 'GX'
     }
   };
 
-  const rule_dipthong = (p, pf, pos) => {
-    // <DIPTHONG ENDING WITH WX> -> <DIPTHONG ENDING WITH WX> WX
-    // <DIPTHONG NOT ENDING WITH WX> -> <DIPTHONG NOT ENDING WITH WX> YX
+  const rule_diphthong = (p, pf, pos) => {
+    // <DIPHTHONG ENDING WITH WX> -> <DIPHTHONG ENDING WITH WX> WX
+    // <DIPHTHONG NOT ENDING WITH WX> -> <DIPHTHONG NOT ENDING WITH WX> YX
     // Example: OIL, COW
 
     // If ends with IY, use YX, else use WX
@@ -266,10 +266,10 @@ function Parser2({phonemeindex, phonemeLength, stress}) {
 
     // Insert at WX or YX following, copying the stress
     if (A === 20) {
-      if (process.env.NODE_ENV === 'development') { console.log(`${pos} insert WX following dipthong NOT ending in IY sound`); }
+      if (process.env.NODE_ENV === 'development') { console.log(`${pos} insert WX following diphthong NOT ending in IY sound`); }
     }
     if (A === 21) {
-      if (process.env.NODE_ENV === 'development') { console.log(`${pos} insert YX following dipthong ending in IY sound`); }
+      if (process.env.NODE_ENV === 'development') { console.log(`${pos} insert YX following diphthong ending in IY sound`); }
     }
     Insert({phonemeindex, phonemeLength, stress}, (pos + 1) & 0xFF, A, 0, stress[pos]);
 
@@ -312,8 +312,8 @@ function Parser2({phonemeindex, phonemeLength, stress}) {
     let pf = flags[p];
     let prior = phonemeindex[pos-1];
 
-    if ((pf & FLAG_DIPTHONG) !== 0) {
-      rule_dipthong(p, pf, pos, 0);
+    if ((pf & FLAG_DIPHTHONG) !== 0) {
+      rule_diphthong(p, pf, pos, 0);
     } else if (p === 78) {
       // Example: MEDDLE
       if (process.env.NODE_ENV === 'development') { console.log(`${pos} RULE: UL -> AX L`); }
@@ -367,14 +367,14 @@ function Parser2({phonemeindex, phonemeLength, stress}) {
       rule_g(pos);
     } else {
       if (p === 72) {  // 'K'
-        // K <VOWEL OR DIPTHONG NOT ENDING WITH IY> -> KX <VOWEL OR DIPTHONG NOT ENDING WITH IY>
+        // K <VOWEL OR DIPHTHONG NOT ENDING WITH IY> -> KX <VOWEL OR DIPHTHONG NOT ENDING WITH IY>
         // Example: COW
         let Y = phonemeindex[pos+1];
         // If at end, replace current phoneme with KX
         if ((flags[Y] & FLAG_DIP_YX) === 0 || Y === END) {
-          // VOWELS AND DIPTHONGS ENDING WITH IY SOUND flag set?
+          // VOWELS AND DIPHTHONGS ENDING WITH IY SOUND flag set?
           if (process.env.NODE_ENV === 'development') {
-            console.log(`${pos} K <VOWEL OR DIPTHONG NOT ENDING WITH IY> -> KX <VOWEL OR DIPTHONG NOT ENDING WITH IY>`);
+            console.log(`${pos} K <VOWEL OR DIPHTHONG NOT ENDING WITH IY> -> KX <VOWEL OR DIPHTHONG NOT ENDING WITH IY>`);
           }
           phonemeindex[pos] = 75;
           p  = 75;
@@ -448,7 +448,7 @@ function Parser2({phonemeindex, phonemeLength, stress}) {
  *  In those cases, the stress value+1 from the following phoneme is copied.
  *
  * For example, the word LOITER is represented as LOY5TER, with as stress
- * of 5 on the dipthong OY. This routine will copy the stress value of 6 (5+1)
+ * of 5 on the diphthong OY. This routine will copy the stress value of 6 (5+1)
  * to the L that precedes it.
  *
  * @param {object}     data The data to populate.
@@ -512,7 +512,7 @@ function SetPhonemeLength({phonemeindex, phonemeLength, stress}) {
  * <VOWEL> <UNVOICED CONSONANT> - increase vowel by 1/2 + 1
  * <NASAL> <STOP CONSONANT> - set nasal = 5, consonant = 6
  * <VOICED STOP CONSONANT> {optional silence} <STOP CONSONANT> - shorten both to 1/2 + 1
- * <LIQUID CONSONANT> <DIPTHONG> - decrease by 2
+ * <LIQUID CONSONANT> <DIPHTHONG> - decrease by 2
  *
  * @param {object}     data The data to populate.
  * @param {Uint8Array} data.phonemeindex
@@ -652,8 +652,8 @@ function AdjustLengths({phonemeindex, phonemeLength}) {
         phonemeLength[loopIndex] = (phonemeLength[loopIndex] >> 1) + 1;
       }
     } else if ((flags[index] & FLAG_LIQUIC) !== 0) { // liquic consonant?
-      // RULE: <VOICED NON-VOWEL> <DIPTHONG>
-      //       Decrease <DIPTHONG> by 2
+      // RULE: <VOICED NON-VOWEL> <DIPHTHONG>
+      //       Decrease <DIPHTHONG> by 2
       index = phonemeindex[X-1]; // prior phoneme;
 
       // FIXME: The debug code here breaks the rule.
@@ -662,7 +662,7 @@ function AdjustLengths({phonemeindex, phonemeLength}) {
       if((flags[index] & FLAG_STOPCONS) !== 0) {
         if (process.env.NODE_ENV === 'development') {
           console.log(`${X} PRE phoneme ${String.fromCharCode(signInputTable1[phonemeindex[X]], signInputTable2[phonemeindex[X]])} length ${phonemeLength[X]}`);
-          console.log(`${X} <LIQUID CONSONANT> <DIPTHONG> - decrease by 2`);
+          console.log(`${X} <LIQUID CONSONANT> <DIPHTHONG> - decrease by 2`);
         }
         phonemeLength[X] -= 2; // 20ms
         if (process.env.NODE_ENV === 'development') {

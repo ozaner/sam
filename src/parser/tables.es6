@@ -118,7 +118,7 @@ export const PhonemeNameTable = (
  *    '**', 'KX', '**', '**', 'UM', 'UN'
  *  0x0020  FLAG_DIP_YX  but looks like front vowels
  *    'IY', 'IH', 'EH', 'AE', 'AA', 'AH', 'AX', 'IX', 'EY', 'AY', 'OY'
- *  0x0010  FLAG_DIPTHONG
+ *  0x0010  FLAG_DIPHTHONG
  *    'EY', 'AY', 'OY', 'AW', 'OW', 'UW'
  *  0x0008
  *    'M*', 'N*', 'NX', 'DX', 'Q*', 'CH', 'J*', 'B*', '**', '**', 'D*',

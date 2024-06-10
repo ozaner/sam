@@ -13,7 +13,7 @@ import {
   FLAG_RULESET2,
   FLAG_VOICED,
   FLAG_0X08,
-  FLAG_DIPTHONG,
+  FLAG_DIPHTHONG,
   FLAG_CONSONANT,
   FLAG_VOWEL_OR_Y,
   FLAG_ALPHA_OR_QUOT
@@ -284,10 +284,10 @@ export function TextToPhonemes (input) {
               return false;
             continue;
           }
-          // '&' - previous char must be a dipthong or previous chars must be 'CH' or 'SH'
+          // '&' - previous char must be a diphthong or previous chars must be 'CH' or 'SH'
           case 38: {
             let inputChar = inputtemp[--inputPos];
-            if((tables.charFlags[inputChar] & FLAG_DIPTHONG) !== 0) {
+            if((tables.charFlags[inputChar] & FLAG_DIPHTHONG) !== 0) {
               continue;
             }
             // 'H'
@@ -396,9 +396,9 @@ export function TextToPhonemes (input) {
               return false;
             continue;
           }
-          // '&' - next char must be a dipthong or next chars must be 'HC' or 'HS'
+          // '&' - next char must be a diphthong or next chars must be 'HC' or 'HS'
           case 38: {
-            if((tables.charFlags[inputtemp[++inputPos]] & FLAG_DIPTHONG) !== 0) {
+            if((tables.charFlags[inputtemp[++inputPos]] & FLAG_DIPHTHONG) !== 0) {
               continue;
             }
             if (inputtemp[inputPos] !== 72) // NOT 'H'

@@ -37,12 +37,12 @@ export const FLAG_VOWEL    = 0x0080;
 
 export const FLAG_CONSONANT= 0x0040;
 /**
- *  dipthong ending with YX
+ *  diphthong ending with YX
  *
  */
 export const FLAG_DIP_YX   = 0x0020;
 
-export const FLAG_DIPTHONG = 0x0010;
+export const FLAG_DIPHTHONG = 0x0010;
 /** unknown:
  *    'M*', 'N*', 'NX', 'DX', 'Q*', 'CH', 'J*', 'B*', '**', '**', 'D*',
  *    '**', '**', 'G*', '**', '**', 'GX', '**', '**', 'P*', '**', '**',
