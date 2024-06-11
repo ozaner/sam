@@ -1,10 +1,10 @@
 require('./types/Uint8.spec.js');
 require('./types/Uint16.spec.js');
 require('./reciter/regression.spec.js');
-require('./parser/parser1.spec');
+require('./parser/parser1.spec.js');
 require('./parser/parser-c.spec.js');
 require('./parser/parser-vs-parser-c.spec.js');
-require('./renderer/renderer-c.spec');
-require('./renderer/renderer.spec');
+require('./renderer/renderer-c.spec.js');
+require('./renderer/renderer.spec.js');
 require('./renderer/renderer-vs-renderer-c.spec.js');
 require('./index.spec.js');

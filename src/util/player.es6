@@ -3,7 +3,7 @@ import {text2Uint8Array, Uint32ToUint8Array, Uint16ToUint8Array} from '../util/u
 /**
  *
  * @param {AudioContext} context
- * @param audiobuffer
+ * @param {Float32Array} audiobuffer
  *
  * @return {Promise}
  */
@@ -72,14 +72,13 @@ export const Uint8ArrayToFloat32Array = (buffer) => {
 }
 
 /**
+ * Converts a Uint8Array buffer to a Uint8Array wave buffer
  *
  * @param {Uint8Array} audiobuffer
  *
- * @return void
+ * @return {Uint8Array}
  */
-export const RenderBuffer = (audiobuffer) => {
-  let filename = 'sam.wav';
-
+export const ToWavBuffer = (audiobuffer) => {
   // Calculate buffer size.
   const realbuffer = new Uint8Array(
     4 + // "RIFF"
@@ -122,7 +121,19 @@ export const RenderBuffer = (audiobuffer) => {
   write(Uint32ToUint8Array(audiobuffer.length)); // buffer length
   write(audiobuffer);
 
-  const blob = new Blob([realbuffer], {type: 'audio/vnd.wave'});
+  return realbuffer;
+};
+
+/**
+ *
+ * @param {Uint8Array} audiobuffer
+ *
+ * @return void
+ */
+export const RenderBuffer = (audiobuffer) => {
+  const filename = "sam.wav";
+
+  const blob = new Blob([ToWavBuffer(audiobuffer)], { type: "audio/vnd.wave" });
 
   const url     = (window.URL || window.webkitURL);
   const fileURL = url.createObjectURL(blob);

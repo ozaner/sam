@@ -1,9 +1,9 @@
 /**
- * This is SamJs.js v0.2.0
+ * This is SamJs.js v0.3.0
  *
  * A Javascript port of "SAM Software Automatic Mouth".
  *
- * (c) 2017-2022 Christian Schiffler
+ * (c) 2017-2024 Christian Schiffler
  *
  * @link(https://github.com/discordier/sam)
  *
@@ -22,7 +22,7 @@ let matchesBitmask = (bits, mask) => {
 /**
  *
  * @param {AudioContext} context
- * @param audiobuffer
+ * @param {Float32Array} audiobuffer
  *
  * @return {Promise}
  */
@@ -213,7 +213,7 @@ let PhonemeNameTable = (' *' + // 00
  *    '**', 'KX', '**', '**', 'UM', 'UN'
  *  0x0020  FLAG_DIP_YX  but looks like front vowels
  *    'IY', 'IH', 'EH', 'AE', 'AA', 'AH', 'AX', 'IX', 'EY', 'AY', 'OY'
- *  0x0010  FLAG_DIPTHONG
+ *  0x0010  FLAG_DIPHTHONG
  *    'EY', 'AY', 'OY', 'AW', 'OW', 'UW'
  *  0x0008
  *    'M*', 'N*', 'NX', 'DX', 'Q*', 'CH', 'J*', 'B*', '**', '**', 'D*',
@@ -515,7 +515,7 @@ SPECIAL
 */
 
 /**
- * Match both characters but not with wildcards.
+ * Match two character phoneme.
  *
  * @param {string} sign1
  * @param {string} sign2
@@ -529,14 +529,14 @@ let full_match = (sign1, sign2) => {
   return index !== -1 ? index : false;
 };
 /**
- * Match character with wildcard.
+ * Match single character phoneme.
  *
  * @param {string} sign1
  * @return {boolean|Number}
  */
 
 
-let wild_match = sign1 => {
+let single_match = sign1 => {
   let index = PhonemeNameTable.findIndex(value => {
     return value === sign1 + '*';
   });
@@ -559,11 +559,11 @@ let wild_match = sign1 => {
  *
  * Repeat until the end is reached:
  * 1. First, a search is made for a 2 character match for phonemes that do not
- *    end with the '*' (wildcard) character. On a match, the index of the phoneme
+ *    end with the '*' (single char mark) character. On a match, the index of the phoneme
  *    is added to the result and the buffer position is advanced 2 bytes.
  *
  * 2. If this fails, a search is made for a 1 character match against all
- *    phoneme names ending with a '*' (wildcard). If this succeeds, the
+ *    phoneme names ending with a '*' (single char mark). If this succeeds, the
  *    phoneme is added to result and the buffer position is advanced
  *    1 byte.
  *
@@ -609,14 +609,14 @@ let Parser1 = (input, addPhoneme, addStress) => {
     let match;
 
     if ((match = full_match(sign1, sign2)) !== false) {
-      // Matched both characters (no wildcards)
+      // Matched both characters (no single char mark)
       srcPos++; // Skip the second character of the input as we've matched it
 
       addPhoneme(match);
       continue;
     }
 
-    if ((match = wild_match(sign1)) !== false) {
+    if ((match = single_match(sign1)) !== false) {
       // Matched just the first character (with second character matching '*'
       addPhoneme(match);
       continue;
@@ -669,12 +669,12 @@ let FLAG_PUNCT = 0x0100;
 let FLAG_VOWEL = 0x0080;
 let FLAG_CONSONANT = 0x0040;
 /**
- *  dipthong ending with YX
+ *  diphthong ending with YX
  *
  */
 
 let FLAG_DIP_YX = 0x0020;
-let FLAG_DIPTHONG = 0x0010;
+let FLAG_DIPHTHONG = 0x0010;
 /** unknown:
  *    'M*', 'N*', 'NX', 'DX', 'Q*', 'CH', 'J*', 'B*', '**', '**', 'D*',
  *    '**', '**', 'G*', '**', '**', 'GX', '**', '**', 'P*', '**', '**',
@@ -795,7 +795,7 @@ let Parser2 = (insertPhoneme, setPhoneme, getPhoneme, getStress) => {
       continue;
     }
 
-    if (phonemeHasFlag(phoneme, FLAG_DIPTHONG)) {
+    if (phonemeHasFlag(phoneme, FLAG_DIPHTHONG)) {
       // <DIPHTHONG ENDING WITH WX> -> <DIPHTHONG ENDING WITH WX> WX
       // <DIPHTHONG NOT ENDING WITH WX> -> <DIPHTHONG NOT ENDING WITH WX> YX
       // Example: OIL, COW
@@ -931,7 +931,7 @@ let Parser2 = (insertPhoneme, setPhoneme, getPhoneme, getStress) => {
       if (!phonemeHasFlag(phoneme, FLAG_DIP_YX) && phoneme !== null) {
         // replace G with GX and continue processing next phoneme
         {
-          console.log("".concat(pos, " RULE: G <VOWEL OR DIPTHONG NOT ENDING WITH IY> -> GX <VOWEL OR DIPTHONG NOT ENDING WITH IY>"));
+          console.log("".concat(pos, " RULE: G <VOWEL OR DIPHTHONG NOT ENDING WITH IY> -> GX <VOWEL OR DIPHTHONG NOT ENDING WITH IY>"));
         }
 
         setPhoneme(pos, 63); // 'GX'
@@ -949,7 +949,7 @@ let Parser2 = (insertPhoneme, setPhoneme, getPhoneme, getStress) => {
       if (!phonemeHasFlag(Y, FLAG_DIP_YX) || Y === null) {
         // VOWELS AND DIPHTHONGS ENDING WITH IY SOUND flag set?
         {
-          console.log("".concat(pos, " K <VOWEL OR DIPTHONG NOT ENDING WITH IY> -> KX <VOWEL OR DIPTHONG NOT ENDING WITH IY>"));
+          console.log("".concat(pos, " K <VOWEL OR DIPHTHONG NOT ENDING WITH IY> -> KX <VOWEL OR DIPHTHONG NOT ENDING WITH IY>"));
         }
 
         setPhoneme(pos, 75);

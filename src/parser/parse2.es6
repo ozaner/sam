@@ -6,7 +6,7 @@ import {
   pT,
   FLAG_ALVEOLAR,
   FLAG_UNVOICED_STOPCONS,
-  FLAG_DIPTHONG,
+  FLAG_DIPHTHONG,
   FLAG_DIP_YX,
   FLAG_VOWEL
 } from './constants.es6'
@@ -96,7 +96,7 @@ export const Parser2 = (insertPhoneme, setPhoneme, getPhoneme, getStress) => {
       continue;
     }
 
-    if (phonemeHasFlag(phoneme, FLAG_DIPTHONG)) {
+    if (phonemeHasFlag(phoneme, FLAG_DIPHTHONG)) {
       // <DIPHTHONG ENDING WITH WX> -> <DIPHTHONG ENDING WITH WX> WX
       // <DIPHTHONG NOT ENDING WITH WX> -> <DIPHTHONG NOT ENDING WITH WX> YX
       // Example: OIL, COW
@@ -203,7 +203,7 @@ export const Parser2 = (insertPhoneme, setPhoneme, getPhoneme, getStress) => {
         // replace G with GX and continue processing next phoneme
         if (process.env.DEBUG_SAM === true) {
           console.log(
-            `${pos} RULE: G <VOWEL OR DIPTHONG NOT ENDING WITH IY> -> GX <VOWEL OR DIPTHONG NOT ENDING WITH IY>`
+            `${pos} RULE: G <VOWEL OR DIPHTHONG NOT ENDING WITH IY> -> GX <VOWEL OR DIPHTHONG NOT ENDING WITH IY>`
           );
         }
         setPhoneme(pos, 63); // 'GX'
@@ -220,7 +220,7 @@ export const Parser2 = (insertPhoneme, setPhoneme, getPhoneme, getStress) => {
       if (!phonemeHasFlag(Y, FLAG_DIP_YX) || Y === null) {
         // VOWELS AND DIPHTHONGS ENDING WITH IY SOUND flag set?
         if (process.env.DEBUG_SAM === true) {
-          console.log(`${pos} K <VOWEL OR DIPTHONG NOT ENDING WITH IY> -> KX <VOWEL OR DIPTHONG NOT ENDING WITH IY>`);
+          console.log(`${pos} K <VOWEL OR DIPHTHONG NOT ENDING WITH IY> -> KX <VOWEL OR DIPHTHONG NOT ENDING WITH IY>`);
         }
         setPhoneme(pos, 75);
         phoneme  = 75;
