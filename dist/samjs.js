@@ -1,9 +1,9 @@
 /**
- * This is SamJs.js v0.2.0
+ * This is SamJs.js v0.3.0
  *
  * A Javascript port of "SAM Software Automatic Mouth".
  *
- * (c) 2017-2022 Christian Schiffler
+ * (c) 2017-2024 Christian Schiffler
  *
  * @link(https://github.com/discordier/sam)
  *
@@ -49,7 +49,7 @@
   /**
    *
    * @param {AudioContext} context
-   * @param audiobuffer
+   * @param {Float32Array} audiobuffer
    *
    * @return {Promise}
    */
@@ -123,15 +123,15 @@
     return audio;
   };
   /**
+   * Converts a Uint8Array buffer to a Uint8Array wave buffer
    *
    * @param {Uint8Array} audiobuffer
    *
-   * @return void
+   * @return {Uint8Array}
    */
 
-  let RenderBuffer = audiobuffer => {
-    let filename = 'sam.wav'; // Calculate buffer size.
-
+  let ToWavBuffer = audiobuffer => {
+    // Calculate buffer size.
     let realbuffer = new Uint8Array(4 + // "RIFF"
     4 + // uint32 filesize
     4 + // "WAVE"
@@ -181,8 +181,19 @@
     write(Uint32ToUint8Array(audiobuffer.length)); // buffer length
 
     write(audiobuffer);
-    let blob = new Blob([realbuffer], {
-      type: 'audio/vnd.wave'
+    return realbuffer;
+  };
+  /**
+   *
+   * @param {Uint8Array} audiobuffer
+   *
+   * @return void
+   */
+
+  let RenderBuffer = audiobuffer => {
+    let filename = "sam.wav";
+    let blob = new Blob([ToWavBuffer(audiobuffer)], {
+      type: "audio/vnd.wave"
     });
     let url = window.URL || window.webkitURL;
     let fileURL = url.createObjectURL(blob);
@@ -284,7 +295,7 @@
 
   let FLAG_0X08 = 0x08; // unknown.
 
-  let FLAG_DIPTHONG$1 = 0x10; // FIXME: is this correct?
+  let FLAG_DIPHTHONG$1 = 0x10; // FIXME: is this correct?
 
   let FLAG_CONSONANT$1 = 0x20; // FIXME: is this correct?
 
@@ -371,8 +382,8 @@
             '#': () => flagsAt(text, --pos, FLAG_VOWEL_OR_Y),
             // '.' - unknown?
             '.': () => flagsAt(text, --pos, FLAG_0X08),
-            // '&' - previous char must be a dipthong or previous chars must be 'CH' or 'SH'
-            '&': () => flagsAt(text, --pos, FLAG_DIPTHONG$1) || isOneOf(text.substr(--pos, 2), ['CH', 'SH']),
+            // '&' - previous char must be a diphthong or previous chars must be 'CH' or 'SH'
+            '&': () => flagsAt(text, --pos, FLAG_DIPHTHONG$1) || isOneOf(text.substr(--pos, 2), ['CH', 'SH']),
             // '@' - previous char must be voiced and not 'H'.
             '@': () => {
               if (flagsAt(text, --pos, FLAG_VOICED$1)) {
@@ -437,8 +448,8 @@
             '#': () => flagsAt(text, ++pos, FLAG_VOWEL_OR_Y),
             // '.' - unknown?
             '.': () => flagsAt(text, ++pos, FLAG_0X08),
-            // '&' - next char must be a dipthong or next chars must be 'HC' or 'HS'
-            '&': () => flagsAt(text, ++pos, FLAG_DIPTHONG$1) || isOneOf(text.substr(++pos - 2, 2), ['HC', 'HS']),
+            // '&' - next char must be a diphthong or next chars must be 'HC' or 'HS'
+            '&': () => flagsAt(text, ++pos, FLAG_DIPHTHONG$1) || isOneOf(text.substr(++pos - 2, 2), ['HC', 'HS']),
             // '@' - next char must be voiced and not 'H'.
             '@': () => {
               if (flagsAt(text, ++pos, FLAG_VOICED$1)) {
@@ -772,7 +783,7 @@
    *    '**', 'KX', '**', '**', 'UM', 'UN'
    *  0x0020  FLAG_DIP_YX  but looks like front vowels
    *    'IY', 'IH', 'EH', 'AE', 'AA', 'AH', 'AX', 'IX', 'EY', 'AY', 'OY'
-   *  0x0010  FLAG_DIPTHONG
+   *  0x0010  FLAG_DIPHTHONG
    *    'EY', 'AY', 'OY', 'AW', 'OW', 'UW'
    *  0x0008
    *    'M*', 'N*', 'NX', 'DX', 'Q*', 'CH', 'J*', 'B*', '**', '**', 'D*',
@@ -1074,7 +1085,7 @@
   */
 
   /**
-   * Match both characters but not with wildcards.
+   * Match two character phoneme.
    *
    * @param {string} sign1
    * @param {string} sign2
@@ -1088,14 +1099,14 @@
     return index !== -1 ? index : false;
   };
   /**
-   * Match character with wildcard.
+   * Match single character phoneme.
    *
    * @param {string} sign1
    * @return {boolean|Number}
    */
 
 
-  let wild_match = sign1 => {
+  let single_match = sign1 => {
     let index = PhonemeNameTable.findIndex(value => {
       return value === sign1 + '*';
     });
@@ -1118,11 +1129,11 @@
    *
    * Repeat until the end is reached:
    * 1. First, a search is made for a 2 character match for phonemes that do not
-   *    end with the '*' (wildcard) character. On a match, the index of the phoneme
+   *    end with the '*' (single char mark) character. On a match, the index of the phoneme
    *    is added to the result and the buffer position is advanced 2 bytes.
    *
    * 2. If this fails, a search is made for a 1 character match against all
-   *    phoneme names ending with a '*' (wildcard). If this succeeds, the
+   *    phoneme names ending with a '*' (single char mark). If this succeeds, the
    *    phoneme is added to result and the buffer position is advanced
    *    1 byte.
    *
@@ -1168,14 +1179,14 @@
       let match;
 
       if ((match = full_match(sign1, sign2)) !== false) {
-        // Matched both characters (no wildcards)
+        // Matched both characters (no single char mark)
         srcPos++; // Skip the second character of the input as we've matched it
 
         addPhoneme(match);
         continue;
       }
 
-      if ((match = wild_match(sign1)) !== false) {
+      if ((match = single_match(sign1)) !== false) {
         // Matched just the first character (with second character matching '*'
         addPhoneme(match);
         continue;
@@ -1228,12 +1239,12 @@
   let FLAG_VOWEL = 0x0080;
   let FLAG_CONSONANT = 0x0040;
   /**
-   *  dipthong ending with YX
+   *  diphthong ending with YX
    *
    */
 
   let FLAG_DIP_YX = 0x0020;
-  let FLAG_DIPTHONG = 0x0010;
+  let FLAG_DIPHTHONG = 0x0010;
   /** unknown:
    *    'M*', 'N*', 'NX', 'DX', 'Q*', 'CH', 'J*', 'B*', '**', '**', 'D*',
    *    '**', '**', 'G*', '**', '**', 'GX', '**', '**', 'P*', '**', '**',
@@ -1354,7 +1365,7 @@
         continue;
       }
 
-      if (phonemeHasFlag(phoneme, FLAG_DIPTHONG)) {
+      if (phonemeHasFlag(phoneme, FLAG_DIPHTHONG)) {
         // <DIPHTHONG ENDING WITH WX> -> <DIPHTHONG ENDING WITH WX> WX
         // <DIPHTHONG NOT ENDING WITH WX> -> <DIPHTHONG NOT ENDING WITH WX> YX
         // Example: OIL, COW
@@ -1490,7 +1501,7 @@
         if (!phonemeHasFlag(phoneme, FLAG_DIP_YX) && phoneme !== null) {
           // replace G with GX and continue processing next phoneme
           {
-            console.log("".concat(pos, " RULE: G <VOWEL OR DIPTHONG NOT ENDING WITH IY> -> GX <VOWEL OR DIPTHONG NOT ENDING WITH IY>"));
+            console.log("".concat(pos, " RULE: G <VOWEL OR DIPHTHONG NOT ENDING WITH IY> -> GX <VOWEL OR DIPHTHONG NOT ENDING WITH IY>"));
           }
 
           setPhoneme(pos, 63); // 'GX'
@@ -1508,7 +1519,7 @@
         if (!phonemeHasFlag(Y, FLAG_DIP_YX) || Y === null) {
           // VOWELS AND DIPHTHONGS ENDING WITH IY SOUND flag set?
           {
-            console.log("".concat(pos, " K <VOWEL OR DIPTHONG NOT ENDING WITH IY> -> KX <VOWEL OR DIPTHONG NOT ENDING WITH IY>"));
+            console.log("".concat(pos, " K <VOWEL OR DIPHTHONG NOT ENDING WITH IY> -> KX <VOWEL OR DIPHTHONG NOT ENDING WITH IY>"));
           }
 
           setPhoneme(pos, 75);
@@ -3059,6 +3070,17 @@
     this.download = (text, phonetic) => {
       RenderBuffer(this.buf8(text, phonetic));
     };
+    /**
+     * Render the passed text as wave buffer array.
+     * 
+     * @param {string}  text       The text to render or phoneme string.
+     * @param {boolean} [phonetic] Flag if the input text is already phonetic data.
+     * 
+     * @return {Uint8Array|false}
+     */
+
+
+    this.wav = (text, phonetic) => ToWavBuffer(this.buf8(text, phonetic));
   }
 
   SamJs.buf8 = buf8;
