@@ -1,6 +1,7 @@
 interface SamJsOptions {
   phonetic?: boolean;
   singmode?: boolean;
+  moderncmu?: boolean;
   debug?: boolean;
   pitch?: number;
   speed?: number;

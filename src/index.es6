@@ -1,21 +1,29 @@
 import {PlayBuffer, RenderBuffer} from './util/player.es6'
 import {TextToPhonemes} from './reciter/reciter.es6';
+import {TextToPhonemesCMU} from './reciter/cmu-reciter.es6';
 import {SamProcess, SamBuffer} from './sam/sam.es6';
 import { ToWavBuffer } from './util/player.es6';
 
-const convert = TextToPhonemes;
+const convert = (input, moderncmu = false) => {
+  if (moderncmu) {
+    return TextToPhonemesCMU(input);
+  } else {
+    return TextToPhonemes(input);
+  }
+}
 const buf8 = SamProcess;
 const buf32 = SamBuffer;
 
 /**
  * @param {object}  [options]
- * @param {Boolean} [options.phonetic] Default false.
- * @param {Boolean} [options.singmode] Default false.
- * @param {Boolean} [options.debug]    Default false.
- * @param {Number}  [options.pitch]    Default 64.
- * @param {Number}  [options.speed]    Default 72.
- * @param {Number}  [options.mouth]    Default 128.
- * @param {Number}  [options.throat]   Default 128.
+ * @param {Boolean} [options.phonetic]  Default false.
+ * @param {Boolean} [options.singmode]  Default false.
+ * @param {Boolean} [options.moderncmu] Default false.
+ * @param {Boolean} [options.debug]     Default false.
+ * @param {Number}  [options.pitch]     Default 64.
+ * @param {Number}  [options.speed]     Default 72.
+ * @param {Number}  [options.mouth]     Default 128.
+ * @param {Number}  [options.throat]    Default 128.
  *
  * @constructor
  */
@@ -24,7 +32,7 @@ function SamJs (options) {
 
   const ensurePhonetic = (text, phonetic) => {
     if (!(phonetic || opts.phonetic)) {
-      return convert(text);
+      return convert(text, opts.moderncmu === true);
     }
     return text.toUpperCase();
   }
