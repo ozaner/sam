@@ -4,7 +4,20 @@ import {TextToPhonemesCMU} from './reciter/cmu-reciter.es6';
 import {SamProcess, SamBuffer} from './sam/sam.es6';
 import { ToWavBuffer } from './util/player.es6';
 
+/**
+ * @param {string} text
+ * @return {string}
+ */
+function normalizeToASCII(text) {
+  // Normalize the string to decompose combined letters and accents (NFD form)
+  return text
+    .normalize('NFD')                    // Decomposes combined characters
+    .replace(/[\u0300-\u036f]/g, '')     // Removes diacritic marks
+    .replace(/[^\x00-\x7F]/g, '');       // Removes non-ASCII characters
+}
+
 const convert = (input, moderncmu = false) => {
+  input = normalizeToASCII(input)
   if (moderncmu) {
     return TextToPhonemesCMU(input);
   } else {
