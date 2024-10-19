@@ -1,4 +1,3 @@
-import {PlayBuffer, RenderBuffer} from './util/player.es6'
 import {TextToPhonemes} from './reciter/reciter.es6';
 import {TextToPhonemesCMU} from './reciter/cmu-reciter.es6';
 import {SamProcess, SamBuffer} from './sam/sam.es6';
@@ -69,28 +68,6 @@ function SamJs (options) {
    * @return {Float32Array|Boolean}
    */
   this.buf32 = (text, phonetic) => buf32(ensurePhonetic(text, phonetic), opts);
-
-  /**
-   * Render the passed text as wave buffer and play it over the speakers.
-   *
-   * @param {string}  text       The text to render or phoneme string.
-   * @param {boolean} [phonetic] Flag if the input text is already phonetic data.
-   *
-   * @return {Promise}
-   */
-  this.speak = (text, phonetic) => PlayBuffer(this.buf32(text, phonetic));
-
-  /**
-   * Render the passed text as wave buffer and download it via URL API.
-   *
-   * @param {string}  text       The text to render or phoneme string.
-   * @param {boolean} [phonetic] Flag if the input text is already phonetic data.
-   *
-   * @return void
-   */
-  this.download = (text, phonetic) => {
-    RenderBuffer(this.buf8(text, phonetic));
-  }
 
   /**
    * Render the passed text as wave buffer array.
