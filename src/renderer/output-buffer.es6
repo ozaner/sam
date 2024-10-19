@@ -32,11 +32,6 @@ export const CreateOutputBuffer = (buffersize) => {
   }
   writer.get = () => {
     // Hack for PhantomJS which does not have slice() on UintArray8
-    if (process.env.NODE_ENV === 'karma-test') {
-      return buffer.slice
-        ? buffer.slice(0, bufferpos / 50 | 0)
-        : new Uint8Array([].slice.call(buffer).slice(0, bufferpos / 50 | 0));
-    }
     return buffer.slice(0, bufferpos / 50 | 0);
   };
   return writer;

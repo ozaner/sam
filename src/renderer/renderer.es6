@@ -2,8 +2,6 @@ import {PrepareFrames} from './prepare-frames.es6';
 import {CreateOutputBuffer} from './output-buffer.es6';
 import {ProcessFrames} from './process-frames.es6';
 
-export let karmaOutput;
-
 /**
  * @param {Array} phonemes
  * @param {Number} [pitch]
@@ -34,22 +32,6 @@ export const Renderer = (phonemes, pitch, mouth, throat, speed, singmode) => {
 
     if (process.env.DEBUG_SAM === true) {
       PrintOutput(pitches, frequency, amplitude, sampledConsonantFlag);
-    }
-    if (process.env.NODE_ENV === 'karma-test') {
-      // Karma run, store data for karma retrieval.
-      karmaOutput = {
-        sampledConsonantFlag: sampledConsonantFlag,
-        amplitude1: amplitude[0],
-        frequency1: frequency[0],
-        amplitude2: amplitude[1],
-        frequency2: frequency[1],
-        amplitude3: amplitude[2],
-        frequency3: frequency[2],
-        pitches: pitches,
-        freq1data: sentences.freqdata[0],
-        freq2data: sentences.freqdata[1],
-        freq3data: sentences.freqdata[2],
-      };
     }
 
     ProcessFrames(Output, t, speed, frequency, pitches, amplitude, sampledConsonantFlag);

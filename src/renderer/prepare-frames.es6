@@ -63,11 +63,5 @@ export const PrepareFrames = (phonemes, pitch, mouth, throat, singmode) => {
     }
 
   let result = [t, frequency, pitches, amplitude, sampledConsonantFlag];
-
-  if (process.env.NODE_ENV === 'karma-test') {
-    // Karma run, store data for karma retrieval.
-    result.freqdata = freqdata;
-  }
-
   return result;
 }
