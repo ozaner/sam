@@ -1,7 +1,7 @@
 import {TextToPhonemes} from './reciter.es6';
-
-const {ToWords} = require('to-words');
-const cmudict = require('cmudict')();
+import {ToWords} from 'to-words';
+import cmudict from 'cmudict';
+const cmudict_val = cmudict();
 
 /**
  * @param {Object} object
@@ -33,7 +33,7 @@ export function TextToPhonemesCMU(words) {
   [...words.matchAll(re)].forEach(word => {
     word = word[0].trim()
     // check cmudict
-    let proc = getParameterCaseInsensitive(cmudict.dict, word);
+    let proc = getParameterCaseInsensitive(cmudict_val.dict, word);
     if (proc === undefined) {
       // if its a number
       if (isNumeric(word)) {
