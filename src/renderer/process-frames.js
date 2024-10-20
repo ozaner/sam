@@ -1,7 +1,7 @@
 import {
   sampledConsonantValues0,
   sampleTable
-} from './tables.es6';
+} from './tables.js';
 
 const RenderSample = (Output, lastSampleOffset, consonantFlag, pitch) => {
 

@@ -1,4 +1,4 @@
-import {PhonemeNameTable, StressTable} from './tables.es6';
+import {PhonemeNameTable, StressTable} from './tables.js';
 
 /**
  * Match two character phoneme.

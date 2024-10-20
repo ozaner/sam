@@ -1,4 +1,4 @@
-import {frequencyData} from './tables.es6';
+import {frequencyData} from './tables.js';
 
 /**
  * SAM's voice can be altered by changing the frequencies of the

@@ -1,6 +1,6 @@
-import {SetMouthThroat} from './set-mouth-throat.es6'
-import {CreateTransitions} from './create-transitions.es6';
-import {CreateFrames} from './create-frames.es6';
+import {SetMouthThroat} from './set-mouth-throat.js'
+import {CreateTransitions} from './create-transitions.js';
+import {CreateFrames} from './create-frames.js';
 
 export const PrepareFrames = (phonemes, pitch, mouth, throat, singmode) => {
   const freqdata = SetMouthThroat(mouth, throat);

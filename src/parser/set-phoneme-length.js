@@ -1,4 +1,4 @@
-import {combinedPhonemeLengthTable} from './tables.es6';
+import {combinedPhonemeLengthTable} from './tables.js';
 
 /**
  * change phoneme length dependent on stress

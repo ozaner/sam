@@ -1,6 +1,6 @@
-import {PrepareFrames} from './prepare-frames.es6';
-import {CreateOutputBuffer} from './output-buffer.es6';
-import {ProcessFrames} from './process-frames.es6';
+import {PrepareFrames} from './prepare-frames.js';
+import {CreateOutputBuffer} from './output-buffer.js';
+import {ProcessFrames} from './process-frames.js';
 
 /**
  * @param {Array} phonemes

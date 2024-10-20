@@ -1,6 +1,6 @@
-import {combinedPhonemeLengthTable} from './tables.es6';
-import {FLAG_0008, FLAG_STOPCONS, FLAG_UNVOICED_STOPCONS} from './constants.es6'
-import { phonemeHasFlag } from './util.es6';
+import {combinedPhonemeLengthTable} from './tables.js';
+import {FLAG_0008, FLAG_STOPCONS, FLAG_UNVOICED_STOPCONS} from './constants.js'
+import { phonemeHasFlag } from './util.js';
 
 /**
  * Makes plosive stop consonants longer by inserting the next two following
