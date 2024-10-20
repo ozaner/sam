@@ -23,9 +23,11 @@ const convert = (input, moderncmu = false) => {
     return TextToPhonemes(input);
   }
 }
-const buf8 = SamProcess;
-const buf32 = SamBuffer;
 
+/**
+ * @class SamJs
+ */
+class SamJs {
 /**
  * @param {object}  [options]
  * @param {Boolean} [options.phonetic]  Default false.
@@ -36,15 +38,21 @@ const buf32 = SamBuffer;
  * @param {Number}  [options.speed]     Default 72.
  * @param {Number}  [options.mouth]     Default 128.
  * @param {Number}  [options.throat]    Default 128.
- *
- * @constructor
  */
-function SamJs (options) {
-  const opts = options || {};
+  constructor(options = {}) {
+    this.opts = options;
+  }
 
-  const ensurePhonetic = (text, phonetic) => {
-    if (!(phonetic || opts.phonetic)) {
-      return convert(text, opts.moderncmu === true);
+  /**
+   * Ensure the input text is phonetic if not already.
+   *
+   * @param {string} text       The input text.
+   * @param {boolean} phonetic  Flag indicating if the input is already phonetic.
+   * @return {string}           The phonetic string or converted text.
+   */
+  ensurePhonetic(text, phonetic) {
+    if (!(phonetic || this.opts.phonetic)) {
+      return convert(text, this.opts.moderncmu);
     }
     return text.toUpperCase();
   }
@@ -54,34 +62,33 @@ function SamJs (options) {
    *
    * @param {string}  text       The text to render or phoneme string.
    * @param {boolean} [phonetic] Flag if the input text is already phonetic data.
-   *
    * @return {Uint8Array|Boolean}
    */
-  this.buf8 = (text, phonetic) => buf8(ensurePhonetic(text, phonetic), opts);
+  buf8(text, phonetic) {
+    return SamProcess(this.ensurePhonetic(text, phonetic), this.opts);
+  }
 
   /**
    * Render the passed text as 32bit wave buffer array.
    *
    * @param {string}  text       The text to render or phoneme string.
    * @param {boolean} [phonetic] Flag if the input text is already phonetic data.
-   *
    * @return {Float32Array|Boolean}
    */
-  this.buf32 = (text, phonetic) => buf32(ensurePhonetic(text, phonetic), opts);
+  buf32(text, phonetic) {
+    return SamBuffer(this.ensurePhonetic(text, phonetic), this.opts);
+  }
 
   /**
    * Render the passed text as wave buffer array.
-   * 
+   *
    * @param {string}  text       The text to render or phoneme string.
    * @param {boolean} [phonetic] Flag if the input text is already phonetic data.
-   * 
    * @return {Uint8Array|false}
    */
-  this.wav = (text, phonetic) => ToWavBuffer(this.buf8(text, phonetic));
+  wav(text, phonetic) {
+    return ToWavBuffer(this.buf8(text, phonetic));
+  }
 }
-
-SamJs.buf8 = buf8;
-SamJs.buf32 = buf32;
-SamJs.convert = convert;
 
 export default SamJs;
