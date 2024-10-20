@@ -1,6 +1,6 @@
-import {PrepareFrames} from './prepare-frames.js';
-import {CreateOutputBuffer} from './output-buffer.js';
-import {ProcessFrames} from './process-frames.js';
+import { PrepareFrames } from "./prepare-frames.js";
+import { CreateOutputBuffer } from "./output-buffer.js";
+import { ProcessFrames } from "./process-frames.js";
 
 /**
  * @param {Array} phonemes
@@ -23,34 +23,42 @@ export const Renderer = (phonemes, pitch, mouth, throat, speed, singmode) => {
 
   // Reserve 176.4*speed samples (=8*speed ms) for each frame.
   const Output = CreateOutputBuffer(
-    176.4 // = (22050/125)
-    * phonemes.reduce((pre, v) => pre + v[1], 0) // Combined phoneme length in frames.
-    * speed | 0
+    176.4 * // = (22050/125)
+        phonemes.reduce((pre, v) => pre + v[1], 0) * // Combined phoneme length in frames.
+        speed | 0,
   );
 
-    const [t, frequency, pitches, amplitude, sampledConsonantFlag] = sentences;
+  const [t, frequency, pitches, amplitude, sampledConsonantFlag] = sentences;
 
-    if (process.env.DEBUG_SAM === true) {
-      PrintOutput(pitches, frequency, amplitude, sampledConsonantFlag);
-    }
+  if (process.env.DEBUG_SAM === true) {
+    PrintOutput(pitches, frequency, amplitude, sampledConsonantFlag);
+  }
 
-    ProcessFrames(Output, t, speed, frequency, pitches, amplitude, sampledConsonantFlag);
+  ProcessFrames(
+    Output,
+    t,
+    speed,
+    frequency,
+    pitches,
+    amplitude,
+    sampledConsonantFlag,
+  );
 
   return Output.get();
-}
+};
 
 const PrintOutput = (pitches, frequency, amplitude, sampledConsonantFlag) => {
   const pad = (num) => {
-    const s = '00000' + num;
+    const s = "00000" + num;
     return s.substr(s.length - 5);
-  }
-  console.log('===========================================');
-  console.log('Final data for speech output:');
-  console.log(' flags ampl1 freq1 ampl2 freq2 ampl3 freq3 pitch');
-  console.log('------------------------------------------------');
-  for (let i=0;i<sampledConsonantFlag.length;i++) {
+  };
+  console.log("===========================================");
+  console.log("Final data for speech output:");
+  console.log(" flags ampl1 freq1 ampl2 freq2 ampl3 freq3 pitch");
+  console.log("------------------------------------------------");
+  for (let i = 0; i < sampledConsonantFlag.length; i++) {
     console.log(
-      ' %s %s %s %s %s %s %s %s',
+      " %s %s %s %s %s %s %s %s",
       pad(sampledConsonantFlag[i]),
       pad(amplitude[0][i]),
       pad(frequency[0][i]),
@@ -58,9 +66,9 @@ const PrintOutput = (pitches, frequency, amplitude, sampledConsonantFlag) => {
       pad(frequency[1][i]),
       pad(amplitude[2][i]),
       pad(frequency[2][i]),
-      pad(pitches[i])
+      pad(pitches[i]),
     );
     i++;
   }
-  console.log('===========================================');
-}
+  console.log("===========================================");
+};

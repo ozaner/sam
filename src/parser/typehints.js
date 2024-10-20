@@ -55,4 +55,3 @@
  * @param {Number} position    The position in the phoneme array to get.
  * @return {Number}
  */
-

@@ -1,7 +1,7 @@
-import {Uint8ArrayToFloat32Array} from './util.js';
+import { Uint8ArrayToFloat32Array } from "./util.js";
 
-import {Parser} from './parser/parser.js';
-import {Renderer} from './renderer/renderer.js';
+import { Parser } from "./parser/parser.js";
+import { Renderer } from "./renderer/renderer.js";
 
 /**
  * Process the input and return the audio buffer.
@@ -24,7 +24,7 @@ export const SamBuffer = (input, options) => {
   }
 
   return Uint8ArrayToFloat32Array(buffer);
-}
+};
 
 /**
  * Process the input and return the audiobuffer.
@@ -46,5 +46,12 @@ export const SamProcess = (input, options = {}) => {
     return false;
   }
 
-  return Renderer(parsed, options.pitch, options.mouth, options.throat, options.speed, options.singmode);
-}
+  return Renderer(
+    parsed,
+    options.pitch,
+    options.mouth,
+    options.throat,
+    options.speed,
+    options.singmode,
+  );
+};

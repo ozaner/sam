@@ -1,6 +1,6 @@
-import {FLAG_VOWEL, FLAG_CONSONANT} from './constants.js'
+import { FLAG_CONSONANT, FLAG_VOWEL } from "./constants.js";
 
-import { phonemeHasFlag } from './util.js';
+import { phonemeHasFlag } from "./util.js";
 
 /**
  * Iterates through the phoneme buffer, copying the stress value from
@@ -25,7 +25,7 @@ export const CopyStress = (getPhoneme, getStress, setStress) => {
   // loop through all the phonemes to be output
   let position = 0;
   let phoneme;
-  while((phoneme = getPhoneme(position)) !== null) {
+  while ((phoneme = getPhoneme(position)) !== null) {
     // if CONSONANT_FLAG set, skip - only vowels get stress
     if (phonemeHasFlag(phoneme, FLAG_CONSONANT)) {
       phoneme = getPhoneme(position + 1);
@@ -42,4 +42,4 @@ export const CopyStress = (getPhoneme, getStress, setStress) => {
     }
     ++position;
   }
-}
+};

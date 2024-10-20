@@ -1,15 +1,15 @@
-import { PhonemeNameTable } from './tables.js';
-import { phonemeHasFlag } from './util.js';
+import { PhonemeNameTable } from "./tables.js";
+import { phonemeHasFlag } from "./util.js";
 import {
-  pR,
-  pD,
-  pT,
   FLAG_ALVEOLAR,
-  FLAG_UNVOICED_STOPCONS,
-  FLAG_DIPHTHONG,
   FLAG_DIP_YX,
-  FLAG_VOWEL
-} from './constants.js'
+  FLAG_DIPHTHONG,
+  FLAG_UNVOICED_STOPCONS,
+  FLAG_VOWEL,
+  pD,
+  pR,
+  pT,
+} from "./constants.js";
 
 /**
  * Rewrites the phonemes using the following rules:
@@ -59,20 +59,26 @@ export const Parser2 = (insertPhoneme, setPhoneme, getPhoneme, getStress) => {
       case 53: {
         // ALVEOLAR flag set?
         if (phonemeHasFlag(getPhoneme(pos - 1), FLAG_ALVEOLAR)) {
-          if (process.env.DEBUG_SAM === true) { console.log(`${pos} RULE: <ALVEOLAR> UW -> <ALVEOLAR> UX`); }
+          if (process.env.DEBUG_SAM === true) {
+            console.log(`${pos} RULE: <ALVEOLAR> UW -> <ALVEOLAR> UX`);
+          }
           setPhoneme(pos, 16); // UX
         }
         break;
       }
       // 'CH' Example: CHEW
       case 42: {
-        if (process.env.DEBUG_SAM === true) { console.log(`${pos} RULE: CH -> CH CH+1`); }
+        if (process.env.DEBUG_SAM === true) {
+          console.log(`${pos} RULE: CH -> CH CH+1`);
+        }
         insertPhoneme(pos + 1, 43, getStress(pos)); // '**'
         break;
       }
       // 'J*' Example: JAY
       case 44: {
-        if (process.env.DEBUG_SAM === true) { console.log(`${pos} RULE: J -> J J+1`); }
+        if (process.env.DEBUG_SAM === true) {
+          console.log(`${pos} RULE: J -> J J+1`);
+        }
         insertPhoneme(pos + 1, 45, getStress(pos)); // '**'
         break;
       }
@@ -81,7 +87,11 @@ export const Parser2 = (insertPhoneme, setPhoneme, getPhoneme, getStress) => {
 
   const changeAX = (position, suffix) => {
     if (process.env.DEBUG_SAM === true) {
-      console.log(`${position} RULE: ${PhonemeNameTable[getPhoneme(position)]} -> AX ${PhonemeNameTable[suffix]}`);
+      console.log(
+        `${position} RULE: ${PhonemeNameTable[getPhoneme(position)]} -> AX ${
+          PhonemeNameTable[suffix]
+        }`,
+      );
     }
     setPhoneme(position, 13); // 'AX'
     insertPhoneme(position + 1, suffix, getStress(position));
@@ -90,7 +100,7 @@ export const Parser2 = (insertPhoneme, setPhoneme, getPhoneme, getStress) => {
   let pos = -1;
   let phoneme;
 
-  while((phoneme = getPhoneme(++pos)) !== null) {
+  while ((phoneme = getPhoneme(++pos)) !== null) {
     // Is phoneme pause?
     if (phoneme === 0) {
       continue;
@@ -104,13 +114,17 @@ export const Parser2 = (insertPhoneme, setPhoneme, getPhoneme, getStress) => {
         console.log(
           !phonemeHasFlag(phoneme, FLAG_DIP_YX)
             ? `${pos} RULE: insert WX following diphthong NOT ending in IY sound`
-            : `${pos} RULE: insert YX following diphthong ending in IY sound`
+            : `${pos} RULE: insert YX following diphthong ending in IY sound`,
         );
       }
       // If ends with IY, use YX, else use WX
       // Insert at WX or YX following, copying the stress
       // 'WX' = 20 'YX' = 21
-      insertPhoneme(pos + 1, phonemeHasFlag(phoneme, FLAG_DIP_YX) ? 21 : 20, getStress(pos));
+      insertPhoneme(
+        pos + 1,
+        phonemeHasFlag(phoneme, FLAG_DIP_YX) ? 21 : 20,
+        getStress(pos),
+      );
       handleUW_CH_J(phoneme, pos);
       continue;
     }
@@ -136,13 +150,20 @@ export const Parser2 = (insertPhoneme, setPhoneme, getPhoneme, getStress) => {
       // RULE:
       //       <STRESSED VOWEL> <SILENCE> <STRESSED VOWEL> -> <STRESSED VOWEL> <SILENCE> Q <VOWEL>
       // EXAMPLE: AWAY EIGHT
-      if (getPhoneme(pos+1) === 0) { // If following phoneme is a pause, get next
-        phoneme = getPhoneme(pos+2);
-        if (phoneme !== null && phonemeHasFlag(phoneme, FLAG_VOWEL) && getStress(pos+2)) {
+      if (getPhoneme(pos + 1) === 0) { // If following phoneme is a pause, get next
+        phoneme = getPhoneme(pos + 2);
+        if (
+          phoneme !== null && phonemeHasFlag(phoneme, FLAG_VOWEL) &&
+          getStress(pos + 2)
+        ) {
           if (process.env.DEBUG_SAM === true) {
-            console.log(`${pos+2} RULE: Insert glottal stop between two stressed vowels with space between them`);
+            console.log(
+              `${
+                pos + 2
+              } RULE: Insert glottal stop between two stressed vowels with space between them`,
+            );
           }
-          insertPhoneme(pos+2, 31, 0); // 31 = 'Q'
+          insertPhoneme(pos + 2, 31, 0); // 31 = 'Q'
         }
       }
       continue;
@@ -155,20 +176,26 @@ export const Parser2 = (insertPhoneme, setPhoneme, getPhoneme, getStress) => {
       switch (priorPhoneme) {
         case pT: {
           // Example: TRACK
-          if (process.env.DEBUG_SAM === true) { console.log(`${pos} RULE: T* R* -> CH R*`); }
+          if (process.env.DEBUG_SAM === true) {
+            console.log(`${pos} RULE: T* R* -> CH R*`);
+          }
           setPhoneme(pos - 1, 42); // 'T*' 'R*' -> 'CH' 'R*'
           break;
         }
         case pD: {
           // Example: DRY
-          if (process.env.DEBUG_SAM === true) { console.log(`${pos} RULE: D* R* -> J* R*`); }
+          if (process.env.DEBUG_SAM === true) {
+            console.log(`${pos} RULE: D* R* -> J* R*`);
+          }
           setPhoneme(pos - 1, 44); // 'J*'
           break;
         }
         default: {
           if (phonemeHasFlag(priorPhoneme, FLAG_VOWEL)) {
             // Example: ART
-            if (process.env.DEBUG_SAM === true) { console.log(`${pos} <VOWEL> R* -> <VOWEL> RX`); }
+            if (process.env.DEBUG_SAM === true) {
+              console.log(`${pos} <VOWEL> R* -> <VOWEL> RX`);
+            }
             setPhoneme(pos, 18); // 'RX'
           }
         }
@@ -179,7 +206,9 @@ export const Parser2 = (insertPhoneme, setPhoneme, getPhoneme, getStress) => {
     // 'L*'
     if ((phoneme === 24) && phonemeHasFlag(priorPhoneme, FLAG_VOWEL)) {
       // Example: ALL
-      if (process.env.DEBUG_SAM === true) { console.log(`${pos} <VOWEL> L* -> <VOWEL> LX`); }
+      if (process.env.DEBUG_SAM === true) {
+        console.log(`${pos} <VOWEL> L* -> <VOWEL> LX`);
+      }
       setPhoneme(pos, 19); // 'LX'
       continue;
     }
@@ -188,7 +217,7 @@ export const Parser2 = (insertPhoneme, setPhoneme, getPhoneme, getStress) => {
       // Can't get to fire -
       //       1. The G -> GX rule intervenes
       //       2. Reciter already replaces GS -> GZ
-      if (process.env.DEBUG_SAM === true) { console.log(`${pos} G S -> G Z`); }
+      if (process.env.DEBUG_SAM === true) console.log(`${pos} G S -> G Z`);
       setPhoneme(pos, 38);
       continue;
     }
@@ -203,7 +232,7 @@ export const Parser2 = (insertPhoneme, setPhoneme, getPhoneme, getStress) => {
         // replace G with GX and continue processing next phoneme
         if (process.env.DEBUG_SAM === true) {
           console.log(
-            `${pos} RULE: G <VOWEL OR DIPHTHONG NOT ENDING WITH IY> -> GX <VOWEL OR DIPHTHONG NOT ENDING WITH IY>`
+            `${pos} RULE: G <VOWEL OR DIPHTHONG NOT ENDING WITH IY> -> GX <VOWEL OR DIPHTHONG NOT ENDING WITH IY>`,
           );
         }
         setPhoneme(pos, 63); // 'GX'
@@ -220,15 +249,19 @@ export const Parser2 = (insertPhoneme, setPhoneme, getPhoneme, getStress) => {
       if (!phonemeHasFlag(Y, FLAG_DIP_YX) || Y === null) {
         // VOWELS AND DIPHTHONGS ENDING WITH IY SOUND flag set?
         if (process.env.DEBUG_SAM === true) {
-          console.log(`${pos} K <VOWEL OR DIPHTHONG NOT ENDING WITH IY> -> KX <VOWEL OR DIPHTHONG NOT ENDING WITH IY>`);
+          console.log(
+            `${pos} K <VOWEL OR DIPHTHONG NOT ENDING WITH IY> -> KX <VOWEL OR DIPHTHONG NOT ENDING WITH IY>`,
+          );
         }
         setPhoneme(pos, 75);
-        phoneme  = 75;
+        phoneme = 75;
       }
     }
 
     // Replace with softer version?
-    if (phonemeHasFlag(phoneme, FLAG_UNVOICED_STOPCONS) && (priorPhoneme === 32)) { // 'S*'
+    if (
+      phonemeHasFlag(phoneme, FLAG_UNVOICED_STOPCONS) && (priorPhoneme === 32)
+    ) { // 'S*'
       // RULE:
       //   'S*' 'P*' -> 'S*' 'B*'
       //   'S*' 'T*' -> 'S*' 'D*'
@@ -238,7 +271,11 @@ export const Parser2 = (insertPhoneme, setPhoneme, getPhoneme, getStress) => {
       //   'S*' 'UN' -> 'S*' '**'
       // Examples: SPY, STY, SKY, SCOWL
       if (process.env.DEBUG_SAM === true) {
-        console.log(`${pos} RULE: S* ${PhonemeNameTable[phoneme]} -> S* ${PhonemeNameTable[phoneme-12]}`);
+        console.log(
+          `${pos} RULE: S* ${PhonemeNameTable[phoneme]} -> S* ${
+            PhonemeNameTable[phoneme - 12]
+          }`,
+        );
       }
       setPhoneme(pos, phoneme - 12);
     } else if (!phonemeHasFlag(phoneme, FLAG_UNVOICED_STOPCONS)) {
@@ -252,14 +289,16 @@ export const Parser2 = (insertPhoneme, setPhoneme, getPhoneme, getStress) => {
       //       <UNSTRESSED VOWEL> T <PAUSE> -> <UNSTRESSED VOWEL> DX <PAUSE>
       //       <UNSTRESSED VOWEL> D <PAUSE>  -> <UNSTRESSED VOWEL> DX <PAUSE>
       // Example: PARTY, TARDY
-      if ((pos > 0) && phonemeHasFlag(getPhoneme(pos-1), FLAG_VOWEL)) {
+      if ((pos > 0) && phonemeHasFlag(getPhoneme(pos - 1), FLAG_VOWEL)) {
         phoneme = getPhoneme(pos + 1);
         if (phoneme === 0) {
           phoneme = getPhoneme(pos + 2);
         }
-        if (phonemeHasFlag(phoneme, FLAG_VOWEL) && !getStress(pos+1)) {
+        if (phonemeHasFlag(phoneme, FLAG_VOWEL) && !getStress(pos + 1)) {
           if (process.env.DEBUG_SAM === true) {
-            console.log(`${pos} Soften T or D following vowel or ER and preceding a pause -> DX`);
+            console.log(
+              `${pos} Soften T or D following vowel or ER and preceding a pause -> DX`,
+            );
           }
           setPhoneme(pos, 30);
         }
@@ -271,4 +310,4 @@ export const Parser2 = (insertPhoneme, setPhoneme, getPhoneme, getStress) => {
       console.log(`${pos}: ${PhonemeNameTable[phoneme]}`);
     }
   } // while
-}
+};

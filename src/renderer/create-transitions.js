@@ -1,4 +1,4 @@
-import {blendRank, inBlendLength, outBlendLength} from './tables.js';
+import { blendRank, inBlendLength, outBlendLength } from "./tables.js";
 
 /**
  * CREATE TRANSITIONS.
@@ -50,10 +50,18 @@ export const CreateTransitions = (pitches, frequency, amplitude, tuples) => {
   // 4=amplitude1
   // 5=amplitude2
   // 6=amplitude3
-  const tables = [pitches, frequency[0], frequency[1], frequency[2], amplitude[0], amplitude[1], amplitude[2]];
+  const tables = [
+    pitches,
+    frequency[0],
+    frequency[1],
+    frequency[2],
+    amplitude[0],
+    amplitude[1],
+    amplitude[2],
+  ];
   const Read = (table, pos) => {
-    if (process.env.NODE_ENV === 'development') {
-      if (table < 0 || table > tables.length -1 ) {
+    if (process.env.NODE_ENV === "development") {
+      if (table < 0 || table > tables.length - 1) {
         throw new Error(`Error invalid table in Read: ${table}`);
       }
     }
@@ -62,12 +70,12 @@ export const CreateTransitions = (pitches, frequency, amplitude, tuples) => {
 
   // linearly interpolate values
   const interpolate = (width, table, frame, change) => {
-    const sign      = (change < 0);
+    const sign = change < 0;
     const remainder = Math.abs(change) % width;
-    const div       = (change / width) | 0;
+    const div = (change / width) | 0;
 
     let error = 0;
-    let pos   = width;
+    let pos = width;
 
     while (--pos > 0) {
       let val = Read(table, frame) + div;
@@ -84,8 +92,8 @@ export const CreateTransitions = (pitches, frequency, amplitude, tuples) => {
       }
 
       // Write updated value back to next frame.
-      if (process.env.NODE_ENV === 'development') {
-        if (table < 0 || table > tables.length -1 ) {
+      if (process.env.NODE_ENV === "development") {
+        if (table < 0 || table > tables.length - 1) {
           throw new Error(`Error invalid table in Read: ${table}`);
         }
       }
@@ -97,13 +105,13 @@ export const CreateTransitions = (pitches, frequency, amplitude, tuples) => {
   let outBlendFrames;
   let inBlendFrames;
   let boundary = 0;
-  for (let pos=0;pos<tuples.length - 1;pos++) {
-    const phoneme      = tuples[pos][0];
-    const next_phoneme = tuples[pos+1][0];
+  for (let pos = 0; pos < tuples.length - 1; pos++) {
+    const phoneme = tuples[pos][0];
+    const next_phoneme = tuples[pos + 1][0];
 
     // get the ranking of each phoneme
     const next_rank = blendRank[next_phoneme];
-    const rank      = blendRank[phoneme];
+    const rank = blendRank[phoneme];
 
     // compare the rank - lower rank value is stronger
     if (rank === next_rank) {
@@ -121,8 +129,8 @@ export const CreateTransitions = (pitches, frequency, amplitude, tuples) => {
       inBlendFrames = inBlendLength[phoneme];
     }
     boundary += tuples[pos][1];
-    const trans_end    = boundary + inBlendFrames;
-    const trans_start  = boundary - outBlendFrames;
+    const trans_end = boundary + inBlendFrames;
+    const trans_start = boundary - outBlendFrames;
     const trans_length = outBlendFrames + inBlendFrames; // total transition
 
     if (((trans_length - 2) & 128) === 0) {
@@ -131,13 +139,14 @@ export const CreateTransitions = (pitches, frequency, amplitude, tuples) => {
       // next phoneme
 
       // half the width of the current and next phoneme
-      const cur_width  = tuples[pos][1] >> 1;
-      const next_width = tuples[pos+1][1] >> 1;
-      const pitch = pitches[boundary + next_width] - pitches[boundary - cur_width];
+      const cur_width = tuples[pos][1] >> 1;
+      const next_width = tuples[pos + 1][1] >> 1;
+      const pitch = pitches[boundary + next_width] -
+        pitches[boundary - cur_width];
       // interpolate the values
       interpolate(cur_width + next_width, 0, trans_start, pitch);
 
-      for (let table = 1; table < 7;table++) {
+      for (let table = 1; table < 7; table++) {
         // tables:
         // 0  pitches
         // 1  frequency1
@@ -154,4 +163,4 @@ export const CreateTransitions = (pitches, frequency, amplitude, tuples) => {
 
   // add the length of last phoneme
   return (boundary + tuples[tuples.length - 1][1]);
-}
+};

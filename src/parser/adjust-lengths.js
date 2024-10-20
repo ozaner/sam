@@ -1,21 +1,18 @@
-import {
-  PhonemeNameTable,
-  phonemeFlags,
-} from './tables.js';
+import { phonemeFlags, PhonemeNameTable } from "./tables.js";
 
 import {
-  FLAG_PUNCT,
-  FLAG_NASAL,
-  FLAG_LIQUIC,
-  FLAG_FRICATIVE,
-  FLAG_UNVOICED_STOPCONS,
-  FLAG_STOPCONS,
-  FLAG_VOICED,
   FLAG_CONSONANT,
-  FLAG_VOWEL
-} from './constants.js'
+  FLAG_FRICATIVE,
+  FLAG_LIQUIC,
+  FLAG_NASAL,
+  FLAG_PUNCT,
+  FLAG_STOPCONS,
+  FLAG_UNVOICED_STOPCONS,
+  FLAG_VOICED,
+  FLAG_VOWEL,
+} from "./constants.js";
 
-import './typehints.js';
+import "./typehints.js";
 
 import { phonemeHasFlag } from "./util.js";
 import { matchesBitmask } from "../util.js";
@@ -50,32 +47,37 @@ export const AdjustLengths = (getPhoneme, setLength, getLength) => {
   // increased by (length * 1.5) + 1
 
   // loop index
-  for (let position = 0;getPhoneme(position) !== null;position++) {
+  for (let position = 0; getPhoneme(position) !== null; position++) {
     // not punctuation?
-    if(!phonemeHasFlag(getPhoneme(position), FLAG_PUNCT)) {
+    if (!phonemeHasFlag(getPhoneme(position), FLAG_PUNCT)) {
       continue;
     }
     let loopIndex = position;
-    while ((--position > 1) && !phonemeHasFlag(getPhoneme(position), FLAG_VOWEL)) { /* back up while not a vowel */ }
+    while (
+      (--position > 1) && !phonemeHasFlag(getPhoneme(position), FLAG_VOWEL)
+    ) { /* back up while not a vowel */ }
     // If beginning of phonemes, exit loop.
     if (position === 0) {
       break;
     }
 
     // Now handle everything between position and loopIndex
-    let vowel=position;
-    for (;position<loopIndex;position++) {
+    let vowel = position;
+    for (; position < loopIndex; position++) {
       // test for not fricative/unvoiced or not voiced
-      if(!phonemeHasFlag(getPhoneme(position), FLAG_FRICATIVE) || phonemeHasFlag(getPhoneme(position), FLAG_VOICED)) {
+      if (
+        !phonemeHasFlag(getPhoneme(position), FLAG_FRICATIVE) ||
+        phonemeHasFlag(getPhoneme(position), FLAG_VOICED)
+      ) {
         let A = getLength(position);
         // change phoneme length to (length * 1.5) + 1
         if (process.env.DEBUG_SAM === true) {
           console.log(
-            position + ' RULE: Lengthen <!FRICATIVE> or <VOICED> ' +
-            PhonemeNameTable[getPhoneme(position)] +
-            ' between VOWEL:' + PhonemeNameTable[getPhoneme(vowel)] +
-            ' and PUNCTUATION:'+PhonemeNameTable[getPhoneme(position)] +
-            ' by 1.5'
+            position + " RULE: Lengthen <!FRICATIVE> or <VOICED> " +
+              PhonemeNameTable[getPhoneme(position)] +
+              " between VOWEL:" + PhonemeNameTable[getPhoneme(vowel)] +
+              " and PUNCTUATION:" + PhonemeNameTable[getPhoneme(position)] +
+              " by 1.5",
           );
         }
         setLength(position, (A >> 1) + A + 1);
@@ -88,7 +90,7 @@ export const AdjustLengths = (getPhoneme, setLength, getLength) => {
   let loopIndex = -1;
   let phoneme;
 
-  while((phoneme = getPhoneme(++loopIndex)) !== null) {
+  while ((phoneme = getPhoneme(++loopIndex)) !== null) {
     let position = loopIndex;
     // vowel?
     if (phonemeHasFlag(phoneme, FLAG_VOWEL)) {
@@ -97,16 +99,19 @@ export const AdjustLengths = (getPhoneme, setLength, getLength) => {
       // not a consonant
       if (!phonemeHasFlag(phoneme, FLAG_CONSONANT)) {
         // 'RX' or 'LX'?
-        if (((phoneme === 18) || (phoneme === 19)) && phonemeHasFlag(getPhoneme(++position), FLAG_CONSONANT)) {
+        if (
+          ((phoneme === 18) || (phoneme === 19)) &&
+          phonemeHasFlag(getPhoneme(++position), FLAG_CONSONANT)
+        ) {
           // followed by consonant?
           if (process.env.DEBUG_SAM === true) {
             console.log(
               loopIndex +
-              ' RULE: <VOWEL ' +
-              PhonemeNameTable[getPhoneme(loopIndex)] +
-              '>' + PhonemeNameTable[phoneme] +
-              ' <CONSONANT: ' + PhonemeNameTable[getPhoneme(position)] +
-              '> - decrease length of vowel by 1'
+                " RULE: <VOWEL " +
+                PhonemeNameTable[getPhoneme(loopIndex)] +
+                ">" + PhonemeNameTable[phoneme] +
+                " <CONSONANT: " + PhonemeNameTable[getPhoneme(position)] +
+                "> - decrease length of vowel by 1",
             );
           }
           // decrease length of vowel by 1 frame
@@ -116,17 +121,21 @@ export const AdjustLengths = (getPhoneme, setLength, getLength) => {
       }
       // Got here if not <VOWEL>
       // FIXME: the case when phoneme === END is taken over by !phonemeHasFlag(phoneme, FLAG_CONSONANT)
-      let flags = (phoneme === null) ? (FLAG_CONSONANT | FLAG_UNVOICED_STOPCONS) : phonemeFlags[phoneme];
+      let flags = (phoneme === null)
+        ? (FLAG_CONSONANT | FLAG_UNVOICED_STOPCONS)
+        : phonemeFlags[phoneme];
       // Unvoiced
       if (!matchesBitmask(flags, FLAG_VOICED)) {
         // *, .*, ?*, ,*, -*, DX, S*, SH, F*, TH, /H, /X, CH, P*, T*, K*, KX
 
         // unvoiced plosive
-        if(matchesBitmask(flags, FLAG_UNVOICED_STOPCONS)) {
+        if (matchesBitmask(flags, FLAG_UNVOICED_STOPCONS)) {
           // RULE: <VOWEL> <UNVOICED PLOSIVE>
           // <VOWEL> <P*, T*, K*, KX>
           if (process.env.DEBUG_SAM === true) {
-            console.log(`${loopIndex} <VOWEL> <UNVOICED PLOSIVE> - decrease vowel by 1/8th`);
+            console.log(
+              `${loopIndex} <VOWEL> <UNVOICED PLOSIVE> - decrease vowel by 1/8th`,
+            );
           }
           let A = getLength(loopIndex);
           setLength(loopIndex, A - (A >> 3));
@@ -138,7 +147,9 @@ export const AdjustLengths = (getPhoneme, setLength, getLength) => {
       // <VOWEL> <IY, IH, EH, AE, AA, AH, AO, UH, AX, IX, ER, UX, OH, RX, LX, WX, YX, WH, R*, L*, W*,
       //          Y*, M*, N*, NX, Q*, Z*, ZH, V*, DH, J*, EY, AY, OY, AW, OW, UW, B*, D*, G*, GX>
       if (process.env.DEBUG_SAM === true) {
-        console.log(`${loopIndex} RULE: <VOWEL> <VOWEL or VOICED CONSONANT> - increase vowel by 1/4 + 1`);
+        console.log(
+          `${loopIndex} RULE: <VOWEL> <VOWEL or VOICED CONSONANT> - increase vowel by 1/4 + 1`,
+        );
       }
       // increase length
       let A = getLength(loopIndex);
@@ -150,7 +161,7 @@ export const AdjustLengths = (getPhoneme, setLength, getLength) => {
     // TH, /H, /X, Z*, ZH, V*, DH, CH, J*, B*, D*, G*, GX, P*, T*, K*, KX
 
     // nasal?
-    if(phonemeHasFlag(phoneme, FLAG_NASAL)) {
+    if (phonemeHasFlag(phoneme, FLAG_NASAL)) {
       // RULE: <NASAL> <STOP CONSONANT>
       //       Set punctuation length to 6
       //       Set stop consonant length to 5
@@ -161,7 +172,9 @@ export const AdjustLengths = (getPhoneme, setLength, getLength) => {
       if (phoneme !== null && phonemeHasFlag(phoneme, FLAG_STOPCONS)) {
         // B*, D*, G*, GX, P*, T*, K*, KX
         if (process.env.DEBUG_SAM === true) {
-          console.log(`${position} RULE: <NASAL> <STOP CONSONANT> - set nasal = 5, consonant = 6`);
+          console.log(
+            `${position} RULE: <NASAL> <STOP CONSONANT> - set nasal = 5, consonant = 6`,
+          );
         }
         setLength(position, 6); // set stop consonant length to 6
         setLength(position - 1, 5); // set nasal length to 5
@@ -173,19 +186,21 @@ export const AdjustLengths = (getPhoneme, setLength, getLength) => {
     // /H, /X, Z*, ZH, V*, DH, CH, J*, B*, D*, G*, GX, P*, T*, K*, KX
 
     // stop consonant?
-    if(phonemeHasFlag(phoneme, FLAG_STOPCONS)) {
+    if (phonemeHasFlag(phoneme, FLAG_STOPCONS)) {
       // B*, D*, G*, GX
 
       // RULE: <STOP CONSONANT> {optional silence} <STOP CONSONANT>
       //       Shorten both to (length/2 + 1)
 
-      while ((phoneme = getPhoneme(++position)) === 0) { /* move past silence */ }
+      while ((phoneme = getPhoneme(++position)) === 0) {
+        /* move past silence */
+      }
       // if another stop consonant, process.
       if (phoneme !== null && phonemeHasFlag(phoneme, FLAG_STOPCONS)) {
         // RULE: <STOP CONSONANT> {optional silence} <STOP CONSONANT>
         if (process.env.DEBUG_SAM === true) {
           console.log(
-            `${position} RULE: <STOP CONSONANT> {optional silence} <STOP CONSONANT> - shorten both to 1/2 + 1`
+            `${position} RULE: <STOP CONSONANT> {optional silence} <STOP CONSONANT> - shorten both to 1/2 + 1`,
           );
         }
         setLength(position, (getLength(position) >> 1) + 1);
@@ -198,18 +213,22 @@ export const AdjustLengths = (getPhoneme, setLength, getLength) => {
     // /H, /X, Z*, ZH, V*, DH, CH, J*
 
     // liquic consonant?
-    if ((position>0)
-      && phonemeHasFlag(phoneme, FLAG_LIQUIC)
-      && phonemeHasFlag(getPhoneme(position-1), FLAG_STOPCONS)) {
+    if (
+      (position > 0) &&
+      phonemeHasFlag(phoneme, FLAG_LIQUIC) &&
+      phonemeHasFlag(getPhoneme(position - 1), FLAG_STOPCONS)
+    ) {
       // R*, L*, W*, Y*
       // RULE: <STOP CONSONANT> <LIQUID>
       //       Decrease <LIQUID> by 2
       // prior phoneme is a stop consonant
       if (process.env.DEBUG_SAM === true) {
-        console.log(`${position} RULE: <STOP CONSONANT> <LIQUID> - decrease by 2`);
+        console.log(
+          `${position} RULE: <STOP CONSONANT> <LIQUID> - decrease by 2`,
+        );
       }
       // decrease the phoneme length by 2 frames
       setLength(position, getLength(position) - 2);
     }
   }
-}
+};

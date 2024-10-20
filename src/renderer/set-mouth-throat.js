@@ -1,4 +1,4 @@
-import {frequencyData} from './tables.js';
+import { frequencyData } from "./tables.js";
 
 /**
  * SAM's voice can be altered by changing the frequencies of the
@@ -15,8 +15,8 @@ import {frequencyData} from './tables.js';
 export const SetMouthThroat = (mouth, throat) => {
   const trans = (factor, initialFrequency) => {
     return (((factor * initialFrequency) >> 8) & 0xFF) << 1;
-  }
-  const freqdata = [[],[],[]];
+  };
+  const freqdata = [[], [], []];
   frequencyData.map((v, i) => {
     freqdata[0][i] = v & 0xFF;
     freqdata[1][i] = (v >> 8) & 0xFF;
@@ -24,7 +24,7 @@ export const SetMouthThroat = (mouth, throat) => {
   });
 
   // recalculate formant frequencies 5..29 for the mouth (F1) and throat (F2)
-  for(let pos = 5; pos < 30; pos++) {
+  for (let pos = 5; pos < 30; pos++) {
     // recalculate mouth frequency
     freqdata[0][pos] = trans(mouth, freqdata[0][pos]);
 
@@ -33,7 +33,7 @@ export const SetMouthThroat = (mouth, throat) => {
   }
 
   // recalculate formant frequencies 48..53
-  for(let pos = 48; pos < 54; pos++) {
+  for (let pos = 48; pos < 54; pos++) {
     // recalculate F1 (mouth formant)
     freqdata[0][pos] = trans(mouth, freqdata[0][pos]);
     // recalculate F2 (throat formant)
@@ -41,4 +41,4 @@ export const SetMouthThroat = (mouth, throat) => {
   }
 
   return freqdata;
-}
+};

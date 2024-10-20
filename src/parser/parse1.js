@@ -1,4 +1,4 @@
-import {PhonemeNameTable, StressTable} from './tables.js';
+import { PhonemeNameTable, StressTable } from "./tables.js";
 
 /**
  * Match two character phoneme.
@@ -9,10 +9,10 @@ import {PhonemeNameTable, StressTable} from './tables.js';
  */
 const full_match = (sign1, sign2) => {
   const index = PhonemeNameTable.findIndex((value) => {
-    return ((value === sign1 + sign2) && (value[1] !== '*'))
+    return ((value === sign1 + sign2) && (value[1] !== "*"));
   });
   return index !== -1 ? index : false;
-}
+};
 
 /**
  * Match single character phoneme.
@@ -22,10 +22,10 @@ const full_match = (sign1, sign2) => {
  */
 const single_match = (sign1) => {
   const index = PhonemeNameTable.findIndex((value) => {
-    return (value === sign1 + '*')
+    return (value === sign1 + "*");
   });
   return index !== -1 ? index : false;
-}
+};
 
 /**
  * The input[] buffer contains a string of phonemes and stress markers along
@@ -81,17 +81,19 @@ const single_match = (sign1) => {
  * @return {undefined}
  */
 export const Parser1 = (input, addPhoneme, addStress) => {
-  for (let srcPos=0;srcPos<input.length;srcPos++) {
+  for (let srcPos = 0; srcPos < input.length; srcPos++) {
     if (process.env.DEBUG_SAM === true) {
       let tmp = input.toLowerCase();
       console.log(
-        `processing "${tmp.substr(0, srcPos)}%c${tmp.substr(srcPos, 2).toUpperCase()}%c${tmp.substr(srcPos + 2)}"`,
-         'color: red;',
-         'color:normal;'
+        `processing "${tmp.substr(0, srcPos)}%c${
+          tmp.substr(srcPos, 2).toUpperCase()
+        }%c${tmp.substr(srcPos + 2)}"`,
+        "color: red;",
+        "color:normal;",
       );
     }
     let sign1 = input[srcPos];
-    let sign2 = input[srcPos + 1] || '';
+    let sign2 = input[srcPos + 1] || "";
     let match;
     if ((match = full_match(sign1, sign2)) !== false) {
       // Matched both characters (no single char mark)
@@ -112,11 +114,11 @@ export const Parser1 = (input, addPhoneme, addStress) => {
     }
 
     if (match === 0) {
-      if (process.env.NODE_ENV === 'development') {
+      if (process.env.NODE_ENV === "development") {
         throw Error(`Could not parse char ${sign1}`);
       }
       throw Error();
     }
     addStress(match); // Set stress for prior phoneme
   }
-}
+};

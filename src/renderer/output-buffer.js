@@ -11,16 +11,19 @@ export const CreateOutputBuffer = (buffersize) => {
   writer.ary = (index, array) => {
     // timetable for more accurate c64 simulation
     const timetable = [
-      [162, 167, 167, 127, 128],   // formants synth
-      [226, 60, 60, 0, 0],         // unvoiced sample 0
-      [225, 60, 59, 0, 0],         // unvoiced sample 1
-      [200, 0, 0, 54, 55],         // voiced sample 0
-      [199, 0, 0, 54, 54]          // voiced sample 1
+      [162, 167, 167, 127, 128], // formants synth
+      [226, 60, 60, 0, 0], // unvoiced sample 0
+      [225, 60, 59, 0, 0], // unvoiced sample 1
+      [200, 0, 0, 54, 55], // voiced sample 0
+      [199, 0, 0, 54, 54], // voiced sample 1
     ];
     bufferpos += timetable[oldTimeTableIndex][index];
     if (((bufferpos / 50) | 0) > buffer.length) {
-      if (process.env.NODE_ENV === 'development') {
-        throw new Error(`Buffer overflow, want ${((bufferpos / 50) | 0)} but buffersize is only ${buffer.length}!`);
+      if (process.env.NODE_ENV === "development") {
+        throw new Error(
+          `Buffer overflow, want ${((bufferpos / 50) |
+            0)} but buffersize is only ${buffer.length}!`,
+        );
       }
       throw new Error();
     }
@@ -29,10 +32,10 @@ export const CreateOutputBuffer = (buffersize) => {
     for (let k = 0; k < 5; k++) {
       buffer[(bufferpos / 50 | 0) + k] = array[k];
     }
-  }
+  };
   writer.get = () => {
     // Hack for PhantomJS which does not have slice() on UintArray8
     return buffer.slice(0, bufferpos / 50 | 0);
   };
   return writer;
-}
+};

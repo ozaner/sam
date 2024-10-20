@@ -1,6 +1,6 @@
-import {phonemeFlags} from './tables.js';
+import { phonemeFlags } from "./tables.js";
 
-import { matchesBitmask } from '../util.js';
+import { matchesBitmask } from "../util.js";
 
 /**
  * Test if a phoneme has the given flag.
@@ -12,4 +12,4 @@ import { matchesBitmask } from '../util.js';
  */
 export const phonemeHasFlag = (phoneme, flag) => {
   return matchesBitmask(phonemeFlags[phoneme], flag);
-}
+};

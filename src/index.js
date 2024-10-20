@@ -1,7 +1,7 @@
-import {TextToPhonemes} from './reciter/reciter.js';
-import {TextToPhonemesCMU} from './reciter/cmu-reciter.js';
-import {SamProcess, SamBuffer} from './sam.js';
-import { ToWavBuffer } from './util.js';
+import { TextToPhonemes } from "./reciter/reciter.js";
+import { TextToPhonemesCMU } from "./reciter/cmu-reciter.js";
+import { SamBuffer, SamProcess } from "./sam.js";
+import { ToWavBuffer } from "./util.js";
 
 /**
  * @param {string} text
@@ -10,35 +10,35 @@ import { ToWavBuffer } from './util.js';
 function normalizeToASCII(text) {
   // Normalize the string to decompose combined letters and accents (NFD form)
   return text
-    .normalize('NFD')                    // Decomposes combined characters
-    .replace(/[\u0300-\u036f]/g, '')     // Removes diacritic marks
-    .replace(/[^\x00-\x7F]/g, '');       // Removes non-ASCII characters
+    .normalize("NFD") // Decomposes combined characters
+    .replace(/[\u0300-\u036f]/g, "") // Removes diacritic marks
+    .replace(/[^\x00-\x7F]/g, ""); // Removes non-ASCII characters
 }
 
 const convert = (input, moderncmu = false) => {
-  input = normalizeToASCII(input)
+  input = normalizeToASCII(input);
   if (moderncmu) {
     return TextToPhonemesCMU(input);
   } else {
     return TextToPhonemes(input);
   }
-}
+};
 
 /**
  * @class SamJs
  */
 class SamJs {
-/**
- * @param {object}  [options]
- * @param {Boolean} [options.phonetic]  Default false.
- * @param {Boolean} [options.singmode]  Default false.
- * @param {Boolean} [options.moderncmu] Default false.
- * @param {Boolean} [options.debug]     Default false.
- * @param {Number}  [options.pitch]     Default 64.
- * @param {Number}  [options.speed]     Default 72.
- * @param {Number}  [options.mouth]     Default 128.
- * @param {Number}  [options.throat]    Default 128.
- */
+  /**
+   * @param {object}  [options]
+   * @param {Boolean} [options.phonetic]  Default false.
+   * @param {Boolean} [options.singmode]  Default false.
+   * @param {Boolean} [options.moderncmu] Default false.
+   * @param {Boolean} [options.debug]     Default false.
+   * @param {Number}  [options.pitch]     Default 64.
+   * @param {Number}  [options.speed]     Default 72.
+   * @param {Number}  [options.mouth]     Default 128.
+   * @param {Number}  [options.throat]    Default 128.
+   */
   constructor(options = {}) {
     this.opts = options;
   }

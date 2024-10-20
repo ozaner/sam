@@ -1,10 +1,10 @@
-import {PhonemeNameTable} from './tables.js';
-import {Parser1} from './parse1.js';
-import {Parser2} from './parse2.js';
-import {AdjustLengths} from './adjust-lengths.js';
-import {CopyStress} from './copy-stress.js';
-import {SetPhonemeLength} from './set-phoneme-length.js';
-import {ProlongPlosiveStopConsonantsCode41240} from './prolong-plosive-stop-consonants.js';
+import { PhonemeNameTable } from "./tables.js";
+import { Parser1 } from "./parse1.js";
+import { Parser2 } from "./parse2.js";
+import { AdjustLengths } from "./adjust-lengths.js";
+import { CopyStress } from "./copy-stress.js";
+import { SetPhonemeLength } from "./set-phoneme-length.js";
+import { ProlongPlosiveStopConsonantsCode41240 } from "./prolong-plosive-stop-consonants.js";
 
 /**
  * Parses speech data.
@@ -20,18 +20,22 @@ export const Parser = (input) => {
     return false;
   }
   const getPhoneme = (pos) => {
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === "development") {
       if (pos < 0 || pos > phonemeindex.length) {
-        throw new Error('Out of bounds: ' + pos)
+        throw new Error("Out of bounds: " + pos);
       }
     }
-    return (pos === phonemeindex.length) ? null : phonemeindex[pos]
+    return (pos === phonemeindex.length) ? null : phonemeindex[pos];
   };
   const setPhoneme = (pos, value) => {
     if (process.env.DEBUG_SAM === true) {
-      console.log(`${pos} CHANGE: ${PhonemeNameTable[phonemeindex[pos]]} -> ${PhonemeNameTable[value]}`);
+      console.log(
+        `${pos} CHANGE: ${PhonemeNameTable[phonemeindex[pos]]} -> ${
+          PhonemeNameTable[value]
+        }`,
+      );
     }
-    phonemeindex[pos]  = value;
+    phonemeindex[pos] = value;
   };
 
   /**
@@ -46,20 +50,22 @@ export const Parser = (input) => {
     if (process.env.DEBUG_SAM === true) {
       console.log(`${pos} INSERT: ${PhonemeNameTable[value]}`);
     }
-    for(let i = phonemeindex.length - 1; i >= pos; i--) {
-      phonemeindex[i+1]  = phonemeindex[i];
-      phonemeLength[i+1] = getLength(i);
-      stress[i+1]        = getStress(i);
+    for (let i = phonemeindex.length - 1; i >= pos; i--) {
+      phonemeindex[i + 1] = phonemeindex[i];
+      phonemeLength[i + 1] = getLength(i);
+      stress[i + 1] = getStress(i);
     }
-    phonemeindex[pos]  = value;
+    phonemeindex[pos] = value;
     phonemeLength[pos] = length | 0;
-    stress[pos]        = stressValue;
+    stress[pos] = stressValue;
   };
   const getStress = (pos) => stress[pos] | 0;
   const setStress = (pos, stressValue) => {
     if (process.env.DEBUG_SAM === true) {
       console.log(
-        `${pos} "${PhonemeNameTable[phonemeindex[pos]]}" SET STRESS: ${stress[pos]} -> ${stressValue}`
+        `${pos} "${PhonemeNameTable[phonemeindex[pos]]}" SET STRESS: ${
+          stress[pos]
+        } -> ${stressValue}`,
       );
     }
     stress[pos] = stressValue;
@@ -68,13 +74,17 @@ export const Parser = (input) => {
   const setLength = (pos, length) => {
     if (process.env.DEBUG_SAM === true) {
       console.log(
-        `${pos} "${PhonemeNameTable[phonemeindex[pos]]}" SET LENGTH: ${phonemeLength[pos]} -> ${length}`
+        `${pos} "${PhonemeNameTable[phonemeindex[pos]]}" SET LENGTH: ${
+          phonemeLength[pos]
+        } -> ${length}`,
       );
       if ((length & 128) !== 0) {
-        throw new Error('Got the flag 0x80, see CopyStress() and SetPhonemeLength() comments!');
+        throw new Error(
+          "Got the flag 0x80, see CopyStress() and SetPhonemeLength() comments!",
+        );
       }
-      if (pos<0 || pos>phonemeindex.length) {
-        throw new Error('Out of bounds: ' + pos)
+      if (pos < 0 || pos > phonemeindex.length) {
+        throw new Error("Out of bounds: " + pos);
       }
     }
     phonemeLength[pos] = length;
@@ -95,11 +105,13 @@ export const Parser = (input) => {
     (value) => {
       if (process.env.DEBUG_SAM === true) {
         if ((value & 128) !== 0) {
-          throw new Error('Got the flag 0x80, see CopyStress() and SetPhonemeLength() comments!');
+          throw new Error(
+            "Got the flag 0x80, see CopyStress() and SetPhonemeLength() comments!",
+          );
         }
       }
       stress[pos - 1] = value; /* Set stress for prior phoneme */
-    }
+    },
   );
 
   if (process.env.DEBUG_SAM === true) {
@@ -115,9 +127,11 @@ export const Parser = (input) => {
     PrintPhonemes(phonemeindex, phonemeLength, stress);
   }
 
-  return phonemeindex.map((v, i) => v ? [v, phonemeLength[i] | 0, stress[i] | 0] : null)
-		     .filter(v => v);
-}
+  return phonemeindex.map((v, i) =>
+    v ? [v, phonemeLength[i] | 0, stress[i] | 0] : null
+  )
+    .filter((v) => v);
+};
 
 /**
  * Debug printing.
@@ -130,29 +144,29 @@ export const Parser = (input) => {
  */
 const PrintPhonemes = (phonemeindex, phonemeLength, stress) => {
   const pad = (num) => {
-    let s = '000' + num;
+    let s = "000" + num;
     return s.substr(s.length - 3);
-  }
+  };
 
-  console.log('==================================');
-  console.log('Internal Phoneme presentation:');
-  console.log(' pos  idx  phoneme  length  stress');
-  console.log('----------------------------------');
-  for (let i=0;i<phonemeindex.length;i++) {
+  console.log("==================================");
+  console.log("Internal Phoneme presentation:");
+  console.log(" pos  idx  phoneme  length  stress");
+  console.log("----------------------------------");
+  for (let i = 0; i < phonemeindex.length; i++) {
     const name = () => {
       if (phonemeindex[i] < 81) {
         return PhonemeNameTable[phonemeindex[i]];
       }
-      return '??'
+      return "??";
     };
     console.log(
-      ' %s  %s  %s       %s     %s',
+      " %s  %s  %s       %s     %s",
       pad(i),
       pad(phonemeindex[i]),
       name(phonemeindex[i]),
       pad(phonemeLength[i]),
-      pad(stress[i])
+      pad(stress[i]),
     );
   }
-  console.log('==================================');
-}
+  console.log("==================================");
+};
