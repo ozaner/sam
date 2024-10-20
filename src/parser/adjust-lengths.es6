@@ -18,7 +18,7 @@ import {
 import './typehints.es6';
 
 import { phonemeHasFlag } from "./util.es6";
-import { matchesBitmask } from "../util/util.es6";
+import { matchesBitmask } from "../util.es6";
 
 /**
  * Applies various rules that adjust the lengths of phonemes
