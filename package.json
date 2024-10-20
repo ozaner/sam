@@ -10,7 +10,7 @@
     "esbuild": "^0.24.0"
   },
   "scripts": {
-    "bundle": "node esbuild.config.js"
+    "bundle": "deno run -A esbuild.config.cjs"
   },
   "engines": {
     "node": ">= 18.0.0"
