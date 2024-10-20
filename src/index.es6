@@ -1,7 +1,7 @@
 import {TextToPhonemes} from './reciter/reciter.es6';
 import {TextToPhonemesCMU} from './reciter/cmu-reciter.es6';
-import {SamProcess, SamBuffer} from './sam/sam.es6';
-import { ToWavBuffer } from './util/player.es6';
+import {SamProcess, SamBuffer} from './sam.es6';
+import { ToWavBuffer } from './util.es6';
 
 /**
  * @param {string} text

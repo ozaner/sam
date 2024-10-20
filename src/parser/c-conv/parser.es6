@@ -31,7 +31,7 @@ import {
 
 const END = 255;
 
-import {text2Uint8Array} from '../../../src/util/util.es6';
+import {text2Uint8Array} from '../../util.es6';
 
 function full_match(sign1, sign2) {
   let Y = 0;
