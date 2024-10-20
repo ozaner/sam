@@ -58,24 +58,24 @@ class SamJs {
   }
 
   /**
-   * Render the passed text as 8bit wave buffer array.
+   * Render the text as a PCM buffer using u8 samples.
    *
    * @param {string}  text       The text to render or phoneme string.
    * @param {boolean} [phonetic] Flag if the input text is already phonetic data.
    * @return {Uint8Array|Boolean}
    */
-  buf8(text, phonetic) {
+  pcmU8(text, phonetic) {
     return SamProcess(this.ensurePhonetic(text, phonetic), this.opts);
   }
 
   /**
-   * Render the passed text as 32bit wave buffer array.
+   * Render the text as a PCM buffer using f32 samples.
    *
    * @param {string}  text       The text to render or phoneme string.
    * @param {boolean} [phonetic] Flag if the input text is already phonetic data.
    * @return {Float32Array|Boolean}
    */
-  buf32(text, phonetic) {
+  pcmF32(text, phonetic) {
     return SamBuffer(this.ensurePhonetic(text, phonetic), this.opts);
   }
 
@@ -87,7 +87,7 @@ class SamJs {
    * @return {Uint8Array|false}
    */
   wav(text, phonetic) {
-    return ToWavBuffer(this.buf8(text, phonetic));
+    return ToWavBuffer(this.pcmU8(text, phonetic));
   }
 }
 
