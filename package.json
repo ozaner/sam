@@ -8,7 +8,7 @@
   "module": "dist/samjs.esm.min.js",
   "dependencies": {
     "cmudict": "https://github.com/HexCodeFFF/datasets-cmudict",
-    "to-words": "^3.1.0"
+    "to-words": "^4.1.0"
   },
   "engines": {
     "node": ">= 18.0.0"
