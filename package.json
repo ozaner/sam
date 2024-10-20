@@ -10,6 +10,12 @@
     "cmudict": "https://github.com/HexCodeFFF/datasets-cmudict",
     "to-words": "^4.1.0"
   },
+  "devDependencies": {
+    "esbuild": "^0.24.0"
+  },
+  "scripts": {
+    "bundle": "node esbuild.config.js"
+  },
   "engines": {
     "node": ">= 18.0.0"
   },
