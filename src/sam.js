@@ -1,7 +1,7 @@
-import {Uint8ArrayToFloat32Array} from './util.es6';
+import {Uint8ArrayToFloat32Array} from './util.js';
 
-import {Parser} from './parser/parser.es6';
-import {Renderer} from './renderer/renderer.es6';
+import {Parser} from './parser/parser.js';
+import {Renderer} from './renderer/renderer.js';
 
 /**
  * Process the input and return the audio buffer.

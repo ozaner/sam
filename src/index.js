@@ -1,7 +1,7 @@
-import {TextToPhonemes} from './reciter/reciter.es6';
-import {TextToPhonemesCMU} from './reciter/cmu-reciter.es6';
-import {SamProcess, SamBuffer} from './sam.es6';
-import { ToWavBuffer } from './util.es6';
+import {TextToPhonemes} from './reciter/reciter.js';
+import {TextToPhonemesCMU} from './reciter/cmu-reciter.js';
+import {SamProcess, SamBuffer} from './sam.js';
+import { ToWavBuffer } from './util.js';
 
 /**
  * @param {string} text

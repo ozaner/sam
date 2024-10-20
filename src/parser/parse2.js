@@ -1,5 +1,5 @@
-import { PhonemeNameTable } from './tables.es6';
-import { phonemeHasFlag } from './util.es6';
+import { PhonemeNameTable } from './tables.js';
+import { phonemeHasFlag } from './util.js';
 import {
   pR,
   pD,
@@ -9,7 +9,7 @@ import {
   FLAG_DIPHTHONG,
   FLAG_DIP_YX,
   FLAG_VOWEL
-} from './constants.es6'
+} from './constants.js'
 
 /**
  * Rewrites the phonemes using the following rules:
