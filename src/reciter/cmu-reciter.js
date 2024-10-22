@@ -1,6 +1,6 @@
 import { TextToPhonemes } from "./reciter.js";
-import { ToWords } from "npm:to-words@4.1.0";
-import cmudict from "https://cdn.jsdelivr.net/gh/stdlib-js/datasets-cmudict@deno/mod.js";
+import { ToWords } from "to-words";
+import cmudict from "@stdlib/datasets-cmudict";
 const cmudict_val = cmudict();
 
 /**

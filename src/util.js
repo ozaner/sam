@@ -1,4 +1,4 @@
-import { getLogger } from "jsr:@std/log";
+import { getLogger } from "@std/log";
 
 export function logger() {
   return getLogger("sam-js");

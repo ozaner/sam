@@ -1,0 +1,7 @@
+{
+    "imports": {
+        "@std/log": "jsr:@std/log",
+        "to-words": "npm:to-words@^4.1.0",
+        "@stdlib/datasets-cmudict": "https://cdn.jsdelivr.net/gh/stdlib-js/datasets-cmudict@deno/mod.js"
+    }
+}
