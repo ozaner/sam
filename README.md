@@ -6,8 +6,8 @@
 is an old TTS (Text-To-Speech) program published in 1982 by Don't Ask Software
 (now SoftVoice, Inc.).
 
-For the official manual, refer to
-[retrobits.net](http://www.retrobits.net/atari/sam.shtml).
+The official manual (in both pdf and markdown formats) is available in the [docs](./docs) directory of the repo. It also includes 
+
 
 ## This Port
 
