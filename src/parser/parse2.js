@@ -151,7 +151,7 @@ export const Parser2 = (insertPhoneme, setPhoneme, getPhoneme, getStress) => {
       continue;
     }
 
-    let priorPhoneme = (pos === 0) ? null : getPhoneme(pos - 1);
+    const priorPhoneme = (pos === 0) ? null : getPhoneme(pos - 1);
 
     if (phoneme === pR) {
       // RULES FOR PHONEMES BEFORE R
@@ -200,7 +200,7 @@ export const Parser2 = (insertPhoneme, setPhoneme, getPhoneme, getStress) => {
     if (phoneme === 60) {
       // G <VOWEL OR DIPHTHONG NOT ENDING WITH IY> -> GX <VOWEL OR DIPHTHONG NOT ENDING WITH IY>
       // Example: GO
-      let phoneme = getPhoneme(pos + 1);
+      const phoneme = getPhoneme(pos + 1);
       // If diphthong ending with YX, move continue processing next phoneme
       if (!phonemeHasFlag(phoneme, FLAG_DIP_YX) && phoneme !== null) {
         // replace G with GX and continue processing next phoneme
@@ -216,7 +216,7 @@ export const Parser2 = (insertPhoneme, setPhoneme, getPhoneme, getStress) => {
     if (phoneme === 72) {
       // K <VOWEL OR DIPHTHONG NOT ENDING WITH IY> -> KX <VOWEL OR DIPHTHONG NOT ENDING WITH IY>
       // Example: COW
-      let Y = getPhoneme(pos + 1);
+      const Y = getPhoneme(pos + 1);
       // If at end, replace current phoneme with KX
       if (!phonemeHasFlag(Y, FLAG_DIP_YX) || Y === null) {
         // VOWELS AND DIPHTHONGS ENDING WITH IY SOUND flag set?

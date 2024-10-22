@@ -51,7 +51,7 @@ export const AdjustLengths = (getPhoneme, setLength, getLength) => {
     if (!phonemeHasFlag(getPhoneme(position), FLAG_PUNCT)) {
       continue;
     }
-    let loopIndex = position;
+    const loopIndex = position;
     while (
       (--position > 1) && !phonemeHasFlag(getPhoneme(position), FLAG_VOWEL)
     ) { /* back up while not a vowel */ }
@@ -61,14 +61,14 @@ export const AdjustLengths = (getPhoneme, setLength, getLength) => {
     }
 
     // Now handle everything between position and loopIndex
-    let vowel = position;
+    const vowel = position;
     for (; position < loopIndex; position++) {
       // test for not fricative/unvoiced or not voiced
       if (
         !phonemeHasFlag(getPhoneme(position), FLAG_FRICATIVE) ||
         phonemeHasFlag(getPhoneme(position), FLAG_VOICED)
       ) {
-        let A = getLength(position);
+        const A = getLength(position);
         // change phoneme length to (length * 1.5) + 1
         logger().debug(() => 
           `${position} RULE: Lengthen <!FRICATIVE> or <VOICED> ${PhonemeNameTable[getPhoneme(position)]}` +
@@ -111,7 +111,7 @@ export const AdjustLengths = (getPhoneme, setLength, getLength) => {
       }
       // Got here if not <VOWEL>
       // FIXME: the case when phoneme === END is taken over by !phonemeHasFlag(phoneme, FLAG_CONSONANT)
-      let flags = (phoneme === null)
+      const flags = (phoneme === null)
         ? (FLAG_CONSONANT | FLAG_UNVOICED_STOPCONS)
         : phonemeFlags[phoneme];
       // Unvoiced
@@ -125,7 +125,7 @@ export const AdjustLengths = (getPhoneme, setLength, getLength) => {
           logger().debug(() => 
             `${loopIndex} <VOWEL> <UNVOICED PLOSIVE> - decrease vowel by 1/8th`
           );
-          let A = getLength(loopIndex);
+          const A = getLength(loopIndex);
           setLength(loopIndex, A - (A >> 3));
         }
         continue;
@@ -138,7 +138,7 @@ export const AdjustLengths = (getPhoneme, setLength, getLength) => {
         `${loopIndex} RULE: <VOWEL> <VOWEL or VOICED CONSONANT> - increase vowel by 1/4 + 1`
       );
       // increase length
-      let A = getLength(loopIndex);
+      const A = getLength(loopIndex);
       setLength(loopIndex, (A >> 2) + A + 1); // 5/4*A + 1
       continue;
     }

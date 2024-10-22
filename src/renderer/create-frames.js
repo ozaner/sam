@@ -42,7 +42,7 @@ export const CreateFrames = (
    */
   const AddInflection = (inflection, pos, pitches) => {
     // store the location of the punctuation
-    let end = pos;
+    const end = pos;
     if (pos < 30) {
       pos = 0;
     } else {

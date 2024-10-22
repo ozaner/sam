@@ -84,15 +84,15 @@ const single_match = (sign1) => {
 export const Parser1 = (input, addPhoneme, addStress) => {
   for (let srcPos = 0; srcPos < input.length; srcPos++) {
     logger().debug(() => {
-      let tmp = input.toLowerCase();
+      const tmp = input.toLowerCase();
   
       // Create a formatted string with embedded ANSI color codes
       return `processing "${tmp.substr(0, srcPos)}${ANSI_RED}${
         tmp.substr(srcPos, 2).toUpperCase()
       }${ANSI_RESET_COLOR}${tmp.substr(srcPos + 2)}"`;
     });    
-    let sign1 = input[srcPos];
-    let sign2 = input[srcPos + 1] || "";
+    const sign1 = input[srcPos];
+    const sign2 = input[srcPos + 1] || "";
     let match;
     if ((match = full_match(sign1, sign2)) !== false) {
       // Matched both characters (no single char mark)

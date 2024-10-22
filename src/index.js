@@ -10,9 +10,10 @@ import { ToWavBuffer } from "./util.js";
 function normalizeToASCII(text) {
   // Normalize the string to decompose combined letters and accents (NFD form)
   return text
-    .normalize("NFD") // Decomposes combined characters
-    .replace(/[\u0300-\u036f]/g, "") // Removes diacritic marks
-    .replace(/[^\x00-\x7F]/g, ""); // Removes non-ASCII characters
+  .normalize("NFD") // Decomposes combined characters
+  .replace(/[\u0300-\u036f]/g, "") // Removes diacritic marks
+  // deno-lint-ignore no-control-regex
+  .replace(/[^\x00-\x7F]/g, ""); // Removes non-ASCII characters
 }
 
 const convert = (input, moderncmu = false) => {

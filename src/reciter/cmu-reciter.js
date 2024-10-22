@@ -28,13 +28,13 @@ function isNumeric(str) {
 export function TextToPhonemesCMU(words) {
   // how to convert CMU stresses (main, secondary, none) to SAM stress http://www.retrobits.net/atari/sam.shtml#ch2.0
   const stresses = ["4", "", ""];
-  let out = [];
+  const out = [];
   // split nicely
-  let re = /([\w']+|[\d-.]+|[^\w\d\s]+)/g;
+  const re = /([\w']+|[\d-.]+|[^\w\d\s]+)/g;
   [...words.matchAll(re)].forEach((word) => {
     word = word[0].trim();
     // check cmudict
-    let proc = getParameterCaseInsensitive(cmudict_val.dict, word);
+    const proc = getParameterCaseInsensitive(cmudict_val.dict, word);
     if (proc === undefined) {
       // if its a number
       if (isNumeric(word)) {
@@ -43,7 +43,7 @@ export function TextToPhonemesCMU(words) {
         out.push(TextToPhonemesCMU(toWords.convert(parseFloat(word))));
       } else {
         // if not found, use classic mode/let sam guess
-        let res = TextToPhonemes(word);
+        const res = TextToPhonemes(word);
         if (typeof res === "string") {
           out.push(res);
         }

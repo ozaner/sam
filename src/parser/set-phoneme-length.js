@@ -13,7 +13,7 @@ export const SetPhonemeLength = (getPhoneme, getStress, setLength) => {
   let position = 0;
   let phoneme;
   while ((phoneme = getPhoneme(position)) !== null) {
-    let stress = getStress(position);
+    const stress = getStress(position);
     if ((stress === 0) || (stress > 0x7F)) {
       setLength(position, combinedPhonemeLengthTable[phoneme] & 0xFF);
     } else {

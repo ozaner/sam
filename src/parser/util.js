@@ -25,7 +25,7 @@ export const phonemeHasFlag = (phoneme, flag) => {
  */
 export const printPhonemes = (phonemeindex, phonemeLength, stress) => {
   const pad = (num) => {
-    let s = "000" + num;
+    const s = "000" + num;
     return s.substr(s.length - 3);
   };
 

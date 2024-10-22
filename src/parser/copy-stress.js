@@ -32,7 +32,7 @@ export const CopyStress = (getPhoneme, getStress, setStress) => {
       // if the following phoneme is the end, or a vowel, skip
       if ((phoneme !== null) && phonemeHasFlag(phoneme, FLAG_VOWEL)) {
         // get the stress value at the next position
-        let stress = getStress(position + 1);
+        const stress = getStress(position + 1);
         if ((stress !== 0) && (stress < 0x80)) {
           // if next phoneme is stressed, and a VOWEL OR ER
           // copy stress from next phoneme to this one

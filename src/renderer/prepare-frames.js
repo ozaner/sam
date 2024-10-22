@@ -76,6 +76,5 @@ export const PrepareFrames = (phonemes, pitch, mouth, throat, singmode) => {
     amplitude[2][i] = amplitudeRescale[amplitude[2][i]];
   }
 
-  let result = [t, frequency, pitches, amplitude, sampledConsonantFlag];
-  return result;
+  return [t, frequency, pitches, amplitude, sampledConsonantFlag];
 };

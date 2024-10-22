@@ -12,13 +12,10 @@ import {
   pR,
   pD,
   pT,
-  FLAG_8000,
-  FLAG_4000,
   FLAG_FRICATIVE,
   FLAG_LIQUIC,
   FLAG_NASAL,
   FLAG_ALVEOLAR,
-  FLAG_0200,
   FLAG_PUNCT,
   FLAG_VOWEL,
   FLAG_CONSONANT,
@@ -246,7 +243,7 @@ function Parser2({phonemeindex, phonemeLength, stress}) {
     // G <VOWEL OR DIPHTHONG NOT ENDING WITH IY> -> GX <VOWEL OR DIPHTHONG NOT ENDING WITH IY>
     // Example: GO
 
-    let index = phonemeindex[pos+1];
+    const index = phonemeindex[pos+1];
 
     // If diphthong ending with YX, move continue processing next phoneme
     if ((index !== 255) && ((flags[index] & FLAG_DIP_YX) === 0)) {
@@ -308,7 +305,7 @@ function Parser2({phonemeindex, phonemeLength, stress}) {
     }
 
     let pf = flags[p];
-    let prior = phonemeindex[pos-1];
+    const prior = phonemeindex[pos-1];
 
     if ((pf & FLAG_DIPHTHONG) !== 0) {
       rule_diphthong(p, pf, pos, 0);
@@ -365,7 +362,7 @@ function Parser2({phonemeindex, phonemeLength, stress}) {
       if (p === 72) {  // 'K'
         // K <VOWEL OR DIPHTHONG NOT ENDING WITH IY> -> KX <VOWEL OR DIPHTHONG NOT ENDING WITH IY>
         // Example: COW
-        let Y = phonemeindex[pos+1];
+        const Y = phonemeindex[pos+1];
         // If at end, replace current phoneme with KX
         if ((flags[Y] & FLAG_DIP_YX) === 0 || Y === END) {
           // VOWELS AND DIPHTHONGS ENDING WITH IY SOUND flag set?
@@ -479,7 +476,7 @@ function CopyStress({phonemeindex, stress}) {
 function SetPhonemeLength({phonemeindex, phonemeLength, stress}) {
   let position = 0;
   while(phonemeindex[position] !== 255) {
-    let A = stress[position];
+    const A = stress[position];
     if ((A === 0) || ((A&128) !== 0)) {
       phonemeLength[position] = phonemeLengthTable[phonemeindex[position]];
     } else {
@@ -525,7 +522,7 @@ function AdjustLengths({phonemeindex, phonemeLength}) {
       continue;
     }
 
-    let loopIndex = X;
+    const loopIndex = X;
 
     while (--X && ((flags[phonemeindex[X]] & FLAG_VOWEL) === 0)) { /* back up while not a vowel */ }
     if (X === 0) {
@@ -542,7 +539,7 @@ function AdjustLengths({phonemeindex, phonemeLength}) {
         logger().debug(() => `${X} PRE phoneme ${String.fromCharCode(signInputTable1[phonemeindex[X]], signInputTable2[phonemeindex[X]])} length ${phonemeLength[X]}`);
         logger().debug(() => `${X} Lengthen <FRICATIVE> or <VOICED> between <VOWEL> and <PUNCTUATION> by 1.5`);
         
-        let A = phonemeLength[X];
+        const A = phonemeLength[X];
         phonemeLength[X] = (A >> 1) + A + 1;
 
         logger().debug(() => `${X} POST phoneme ${String.fromCharCode(signInputTable1[phonemeindex[X]], signInputTable2[phonemeindex[X]])} length ${phonemeLength[X]}`);
@@ -574,7 +571,7 @@ function AdjustLengths({phonemeindex, phonemeLength}) {
           }
         }
       } else { // Got here if not <VOWEL>
-        let flag = (index === END) ? 65 : flags[index]; // 65 if end marker
+        const flag = (index === END) ? 65 : flags[index]; // 65 if end marker
 
         // Unvoiced
         if ((flag & FLAG_VOICED) === 0) {
@@ -596,7 +593,7 @@ function AdjustLengths({phonemeindex, phonemeLength}) {
           logger().debug(() => `${index} <VOWEL> <VOICED CONSONANT> - increase vowel by 1/2 + 1`);
 
           // decrease length
-          let A = phonemeLength[loopIndex];
+          const A = phonemeLength[loopIndex];
           phonemeLength[loopIndex] = (A >> 2) + A + 1;     // 5/4*A + 1
 
           logger().debug(() => `${loopIndex} POST phoneme ${String.fromCharCode(signInputTable1[phonemeindex[loopIndex]], signInputTable2[phonemeindex[loopIndex]])} length ${phonemeLength[loopIndex]}`);
@@ -683,6 +680,7 @@ function Code41240({phonemeindex, phonemeLength, stress}) {
   }
 }
 
+//FIXME: was this ever meant to be implemented?
 /**
  *
  * @param {object}     data The data to populate.
@@ -692,6 +690,7 @@ function Code41240({phonemeindex, phonemeLength, stress}) {
  *
  * @return undefined
  */
+// deno-lint-ignore no-unused-vars
 function InsertBreath({phonemeindex, phonemeLength, stress}) {
 }
 
