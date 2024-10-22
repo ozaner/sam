@@ -1,5 +1,5 @@
 import { TextToPhonemes } from "./reciter.js";
-import cmudict from "@stdlib/datasets-cmudict";
+import cmudict from "https://cdn.jsdelivr.net/gh/stdlib-js/datasets-cmudict@deno/mod.js";
 const cmudict_val = cmudict();
 
 /**

@@ -1,6 +1,0 @@
-{
-    "imports": {
-        "@std/log": "jsr:@std/log",
-        "@stdlib/datasets-cmudict": "https://cdn.jsdelivr.net/gh/stdlib-js/datasets-cmudict@deno/mod.js"
-    }
-}
