@@ -1,5 +1,4 @@
 import { TextToPhonemes } from "./reciter.js";
-import { ToWords } from "to-words";
 import cmudict from "@stdlib/datasets-cmudict";
 const cmudict_val = cmudict();
 
@@ -36,17 +35,10 @@ export function TextToPhonemesCMU(words) {
     // check cmudict
     const proc = getParameterCaseInsensitive(cmudict_val.dict, word);
     if (proc === undefined) {
-      // if its a number
-      if (isNumeric(word)) {
-        // parse to words and try again
-        const toWords = new ToWords();
-        out.push(TextToPhonemesCMU(toWords.convert(parseFloat(word))));
-      } else {
-        // if not found, use classic mode/let sam guess
-        const res = TextToPhonemes(word);
-        if (typeof res === "string") {
-          out.push(res);
-        }
+      // if not found, use classic mode/let sam guess
+      const res = TextToPhonemes(word);
+      if (typeof res === "string") {
+        out.push(res);
       }
     } else {
       // if it is found
