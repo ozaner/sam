@@ -1,3 +1,4 @@
+import { ANSI_RED, ANSI_RESET_COLOR, logger } from "../util.js"
 import { PhonemeNameTable, StressTable } from "./tables.js";
 
 /**
@@ -82,16 +83,14 @@ const single_match = (sign1) => {
  */
 export const Parser1 = (input, addPhoneme, addStress) => {
   for (let srcPos = 0; srcPos < input.length; srcPos++) {
-    if (process.env.DEBUG_SAM === true) {
+    logger().debug(() => {
       let tmp = input.toLowerCase();
-      console.log(
-        `processing "${tmp.substr(0, srcPos)}%c${
-          tmp.substr(srcPos, 2).toUpperCase()
-        }%c${tmp.substr(srcPos + 2)}"`,
-        "color: red;",
-        "color:normal;",
-      );
-    }
+  
+      // Create a formatted string with embedded ANSI color codes
+      return `processing "${tmp.substr(0, srcPos)}${ANSI_RED}${
+        tmp.substr(srcPos, 2).toUpperCase()
+      }${ANSI_RESET_COLOR}${tmp.substr(srcPos + 2)}"`;
+    });    
     let sign1 = input[srcPos];
     let sign2 = input[srcPos + 1] || "";
     let match;
@@ -114,10 +113,8 @@ export const Parser1 = (input, addPhoneme, addStress) => {
     }
 
     if (match === 0) {
-      if (process.env.NODE_ENV === "development") {
-        throw Error(`Could not parse char ${sign1}`);
-      }
-      throw Error();
+      //NOTE: this is unrecoverable so using a logger().debug
+      throw Error(`Could not parse char ${sign1}`);
     }
     addStress(match); // Set stress for prior phoneme
   }

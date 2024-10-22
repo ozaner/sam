@@ -1,3 +1,4 @@
+import { logger } from "../util.js"
 import { blendRank, inBlendLength, outBlendLength } from "./tables.js";
 
 /**
@@ -60,10 +61,8 @@ export const CreateTransitions = (pitches, frequency, amplitude, tuples) => {
     amplitude[2],
   ];
   const Read = (table, pos) => {
-    if (process.env.NODE_ENV === "development") {
-      if (table < 0 || table > tables.length - 1) {
-        throw new Error(`Error invalid table in Read: ${table}`);
-      }
+    if (table < 0 || table > tables.length - 1) {
+      logger().error(`Error invalid table in Read: ${table}`);
     }
     return tables[table][pos];
   };
@@ -92,10 +91,8 @@ export const CreateTransitions = (pitches, frequency, amplitude, tuples) => {
       }
 
       // Write updated value back to next frame.
-      if (process.env.NODE_ENV === "development") {
-        if (table < 0 || table > tables.length - 1) {
-          throw new Error(`Error invalid table in Read: ${table}`);
-        }
+      if (table < 0 || table > tables.length - 1) {
+        logger().error(`Error invalid table in Read: ${table}`);
       }
       tables[table][++frame] = val;
       val += div;

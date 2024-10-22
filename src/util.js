@@ -1,3 +1,12 @@
+import { getLogger } from "jsr:@std/log";
+
+export function logger() {
+  return getLogger("sam-js");
+}
+
+export const ANSI_RED = "\x1b[31m";
+export const ANSI_RESET_COLOR = "\x1b[0m";
+
 /**
  * Converts a Uint8Array buffer to a Uint8Array wave buffer
  *

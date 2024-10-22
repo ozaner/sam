@@ -19,13 +19,11 @@ export const CreateOutputBuffer = (buffersize) => {
     ];
     bufferpos += timetable[oldTimeTableIndex][index];
     if (((bufferpos / 50) | 0) > buffer.length) {
-      if (process.env.NODE_ENV === "development") {
-        throw new Error(
-          `Buffer overflow, want ${((bufferpos / 50) |
-            0)} but buffersize is only ${buffer.length}!`,
-        );
-      }
-      throw new Error();
+      //NOTE: this is unrecoverable so not hiding this behind a logger().debug
+      throw new Error(
+        `Buffer overflow, want ${((bufferpos / 50) |
+          0)} but buffersize is only ${buffer.length}!`,
+      );
     }
     oldTimeTableIndex = index;
     // write a little bit in advance

@@ -1,3 +1,4 @@
+import { ANSI_RED, ANSI_RESET_COLOR, logger } from "../util.js"
 import * as tables from "./tables.js";
 
 import {
@@ -104,9 +105,7 @@ const reciterRule = (ruleString) => {
               if (!isOneOf(inputChar, TCS)) {
                 return false;
               }
-              if (process.env.NODE_ENV === "development") {
-                throw new Error("Is always false but happened? " + inputChar);
-              }
+              logger().error(`Is always false but happened? Error char: ${inputChar}`);
               return true;
             },
             // '^' - previous char must be a consonant.
@@ -173,9 +172,7 @@ const reciterRule = (ruleString) => {
                 return false;
               }
               // FIXME: This is illogical and can never be reached. Bug in orig. code? reciter.c:489 (pos37367)
-              if (process.env.NODE_ENV === "development") {
-                throw new Error("This should not be possible ", inputChar);
-              }
+              logger().error(`This should not be possible. Error char: ${inputChar}`);
               return true;
             },
             // '^' - next char must be a consonant.
@@ -277,9 +274,7 @@ const reciterRule = (ruleString) => {
    */
   const result = (text, inputPos, callback) => {
     if (matches(text, inputPos)) {
-      if (process.env.DEBUG_SAM === true) {
-        console.log(`${source} -> ${target}`);
-      }
+      logger().debug(`${source} -> ${target}`);
       callback(target, match.length);
       return true;
     }
@@ -322,16 +317,15 @@ export const TextToPhonemes = (input) => {
 
   let c = 0;
   while ((inputPos < text.length) && (c++ < 10000)) {
-    if (process.env.DEBUG_SAM === true) {
+    logger().debug(() => {
       const tmp = text.toLowerCase();
-      console.log(
-        `processing "${tmp.substr(0, inputPos)}%c${
-          tmp[inputPos].toUpperCase()
-        }%c${tmp.substr(inputPos + 1)}"`,
-        "color: red;",
-        "color:normal;",
-      );
-    }
+      const formattedString = `processing "${tmp.substr(0, inputPos)}${ANSI_RED}${
+        tmp[inputPos].toUpperCase()
+      }${ANSI_RESET_COLOR}${tmp.substr(inputPos + 1)}"`;
+    
+      // Return the formatted string with embedded ANSI colors
+      return formattedString;
+    });
     const currentChar = text[inputPos];
 
     // NOT '.' or '.' followed by number.

@@ -1,6 +1,7 @@
 import { PrepareFrames } from "./prepare-frames.js";
 import { CreateOutputBuffer } from "./output-buffer.js";
 import { ProcessFrames } from "./process-frames.js";
+import { logger } from "../util.js";
 
 /**
  * @param {Array} phonemes
@@ -30,9 +31,7 @@ export const Renderer = (phonemes, pitch, mouth, throat, speed, singmode) => {
 
   const [t, frequency, pitches, amplitude, sampledConsonantFlag] = sentences;
 
-  if (process.env.DEBUG_SAM === true) {
-    PrintOutput(pitches, frequency, amplitude, sampledConsonantFlag);
-  }
+  logger().debug(() => printOutput(pitches, frequency, amplitude, sampledConsonantFlag));
 
   ProcessFrames(
     Output,
@@ -47,28 +46,26 @@ export const Renderer = (phonemes, pitch, mouth, throat, speed, singmode) => {
   return Output.get();
 };
 
-const PrintOutput = (pitches, frequency, amplitude, sampledConsonantFlag) => {
+const printOutput = (pitches, frequency, amplitude, sampledConsonantFlag) => {
   const pad = (num) => {
     const s = "00000" + num;
     return s.substr(s.length - 5);
   };
-  console.log("===========================================");
-  console.log("Final data for speech output:");
-  console.log(" flags ampl1 freq1 ampl2 freq2 ampl3 freq3 pitch");
-  console.log("------------------------------------------------");
+
+  // Initialize the output as a string
+  let output = "===========================================\n";
+  output += "Final data for speech output:\n";
+  output += " flags ampl1 freq1 ampl2 freq2 ampl3 freq3 pitch\n";
+  output += "------------------------------------------------\n";
+  
+  // Loop through the data and format it into the string
   for (let i = 0; i < sampledConsonantFlag.length; i++) {
-    console.log(
-      " %s %s %s %s %s %s %s %s",
-      pad(sampledConsonantFlag[i]),
-      pad(amplitude[0][i]),
-      pad(frequency[0][i]),
-      pad(amplitude[1][i]),
-      pad(frequency[1][i]),
-      pad(amplitude[2][i]),
-      pad(frequency[2][i]),
-      pad(pitches[i]),
-    );
-    i++;
+    output += ` ${pad(sampledConsonantFlag[i])} ${pad(amplitude[0][i])} ${pad(frequency[0][i])} ${pad(amplitude[1][i])} ${pad(frequency[1][i])} ${pad(amplitude[2][i])} ${pad(frequency[2][i])} ${pad(pitches[i])}\n`;
   }
-  console.log("===========================================");
+
+  // Add the closing line to the output
+  output += "===========================================\n";
+
+  // Return the final string instead of logging it
+  return output;
 };

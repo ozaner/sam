@@ -1,3 +1,4 @@
+import { logger } from "../../util.js"
 import {
   signInputTable1,
   signInputTable2,
@@ -32,6 +33,7 @@ import {
 const END = 255;
 
 import {text2Uint8Array} from '../../util.js';
+import { printPhonemes } from "../util.js";
 
 function full_match(sign1, sign2) {
   let Y = 0;
@@ -225,18 +227,18 @@ function Parser2({phonemeindex, phonemeLength, stress}) {
   const rule_alveolar_uw = (X) => {
     // ALVEOLAR flag set?
     if ((flags[phonemeindex[X-1]] & FLAG_ALVEOLAR) !== 0) {
-      if (process.env.NODE_ENV === 'development') { console.log(`${X} RULE: <ALVEOLAR> UW -> <ALVEOLAR> UX`); }
+      logger().debug(() => `${X} RULE: <ALVEOLAR> UW -> <ALVEOLAR> UX`);
       phonemeindex[X] = 16;
     }
   };
 
   const rule_ch = (X) => {
-    if (process.env.NODE_ENV === 'development') { console.log(`${X} RULE: CH -> CH CH+1`); }
+    logger().debug(() => `${X} RULE: CH -> CH CH+1`);
     Insert({phonemeindex, phonemeLength, stress}, X + 1, 43, 0, stress[X]);
   };
 
   const rule_j = (X) => {
-    if (process.env.NODE_ENV === 'development') { console.log(`${X} RULE: J -> J J+1`); }
+    logger().debug(() => `${X} RULE: J -> J J+1`);
     Insert({phonemeindex, phonemeLength, stress}, X + 1, 45, 0, stress[X]);
   };
 
@@ -249,9 +251,7 @@ function Parser2({phonemeindex, phonemeLength, stress}) {
     // If diphthong ending with YX, move continue processing next phoneme
     if ((index !== 255) && ((flags[index] & FLAG_DIP_YX) === 0)) {
       // replace G with GX and continue processing next phoneme
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`${pos} RULE: G <VOWEL OR DIPHTHONG NOT ENDING WITH IY> -> GX <VOWEL OR DIPHTHONG NOT ENDING WITH IY>`);
-      }
+      logger().debug(() => `${pos} RULE: G <VOWEL OR DIPHTHONG NOT ENDING WITH IY> -> GX <VOWEL OR DIPHTHONG NOT ENDING WITH IY>`);
       phonemeindex[pos] = 63; // 'GX'
     }
   };
@@ -265,12 +265,10 @@ function Parser2({phonemeindex, phonemeLength, stress}) {
     const A = ((pf & FLAG_DIP_YX) !== 0) ? 21 : 20; // 'WX' = 20 'YX' = 21
 
     // Insert at WX or YX following, copying the stress
-    if (A === 20) {
-      if (process.env.NODE_ENV === 'development') { console.log(`${pos} insert WX following diphthong NOT ending in IY sound`); }
-    }
-    if (A === 21) {
-      if (process.env.NODE_ENV === 'development') { console.log(`${pos} insert YX following diphthong ending in IY sound`); }
-    }
+    logger().debug(() => 
+      `${pos} insert ${A === 20 ? 'WX' : 'YX'} following diphthong ${A === 21 ? 'ending in IY sound' : 'NOT ending in IY sound'}`
+    );
+
     Insert({phonemeindex, phonemeLength, stress}, (pos + 1) & 0xFF, A, 0, stress[pos]);
 
     if (p === 53 || p === 42 || p === 44) {
@@ -288,9 +286,9 @@ function Parser2({phonemeindex, phonemeLength, stress}) {
   };
 
   const ChangeRule = (position, rule, mem60, stressValue) => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`${position} RULE: ${String.fromCharCode(signInputTable1[phonemeindex[position]], signInputTable2[phonemeindex[position]])} -> AX ${String.fromCharCode(signInputTable1[mem60], signInputTable2[mem60])}`);
-    }
+    logger().debug(() =>
+      `${position} RULE: ${String.fromCharCode(signInputTable1[phonemeindex[position]], signInputTable2[phonemeindex[position]])} -> AX ${String.fromCharCode(signInputTable1[mem60], signInputTable2[mem60])}`
+    );
     position = position & 0xFF;
     phonemeindex[position] = rule;
     Insert({phonemeindex, phonemeLength, stress}, position + 1, mem60, 0, stressValue);
@@ -300,9 +298,9 @@ function Parser2({phonemeindex, phonemeLength, stress}) {
   let p;
 
   while((p = phonemeindex[pos]) !== END) {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('%d: %s', pos, String.fromCharCode(signInputTable1[p], signInputTable2[p]));
-    }
+    logger().debug(() =>
+      `${pos}: ${String.fromCharCode(signInputTable1[p], signInputTable2[p])}`
+    );
 
     if (p === 0) { // Is phoneme pause?
       ++pos;
@@ -316,14 +314,14 @@ function Parser2({phonemeindex, phonemeLength, stress}) {
       rule_diphthong(p, pf, pos, 0);
     } else if (p === 78) {
       // Example: MEDDLE
-      if (process.env.NODE_ENV === 'development') { console.log(`${pos} RULE: UL -> AX L`); }
+      logger().debug(() => `${pos} RULE: UL -> AX L`);
       ChangeRule(pos, 13, 24, stress[pos]);
     } else if (p === 79) {
       // Example: ASTRONOMY
-      if (process.env.NODE_ENV === 'development') { console.log(`${pos} RULE: UM -> AX M`); }
+      logger().debug(() => `${pos} RULE: UM -> AX M`);
       ChangeRule(pos, 13, 27, stress[pos]);
     } else if (p === 80) {
-      if (process.env.NODE_ENV === 'development') { console.log(`${pos} RULE: UN -> AX N`); }
+      logger().debug(() => `${pos} RULE: UN -> AX N`);
       ChangeRule(pos, 13, 28, stress[pos]);
     } // Example: FUNCTION
     else if ((pf & FLAG_VOWEL) && stress[pos]) {
@@ -333,35 +331,33 @@ function Parser2({phonemeindex, phonemeLength, stress}) {
       if (!phonemeindex[pos+1]) { // If following phoneme is a pause, get next
         p = phonemeindex[pos+2];
         if (p !== END && ((flags[p] & FLAG_VOWEL) !== 0) && stress[pos+2]) {
-          if (process.env.NODE_ENV === 'development') {
-            console.log(`${pos+2} Insert glottal stop between two stressed vowels with space between them`);
-          }
+          logger().debug(() => `${pos+2} Insert glottal stop between two stressed vowels with space between them`);
           Insert({phonemeindex, phonemeLength, stress}, pos+2, 31, 0, 0); // 31 = 'Q'
         }
       }
     } else if (p === pR) { // RULES FOR PHONEMES BEFORE R
       if (prior === pT) {
         // Example: TRACK
-        if (process.env.NODE_ENV === 'development') { console.log(`${pos} RULE: T* R* -> CH R*`); }
+        logger().debug(() => `${pos} RULE: T* R* -> CH R*`);
         phonemeindex[pos-1] = 42;
       } else if (prior === pD) {
         // Example: DRY
-        if (process.env.NODE_ENV === 'development') { console.log(`${pos} RULE: D* R* -> J* R*`); }
+        logger().debug(() => `${pos} RULE: D* R* -> J* R*`);
         phonemeindex[pos-1] = 44;
       } else if ((flags[prior] & FLAG_VOWEL) !== 0) {
         // Example: ART
-        if (process.env.NODE_ENV === 'development') { console.log(`${pos} <VOWEL> R* -> <VOWEL> RX`); }
+        logger().debug(() => `${pos} <VOWEL> R* -> <VOWEL> RX`);
         phonemeindex[pos] = 18;
       }
     } else if ((p === 24) && ((flags[prior] & FLAG_VOWEL) !== 0)) {
       // Example: ALL
-      if (process.env.NODE_ENV === 'development') { console.log(`${pos} <VOWEL> L* -> <VOWEL> LX`); }
+      logger().debug(() => `${pos} <VOWEL> L* -> <VOWEL> LX`);
       phonemeindex[pos] = 19;
     } else if (prior === 60 && p === 32) { // 'G' 'S'
       // Can't get to fire -
       //       1. The G -> GX rule intervenes
       //       2. Reciter already replaces GS -> GZ
-      if (process.env.NODE_ENV === 'development') { console.log(`${pos} G S -> G Z`); }
+      logger().debug(() => `${pos} G S -> G Z`);
       phonemeindex[pos] = 38;
     } else if (p === 60) {
       rule_g(pos);
@@ -373,9 +369,7 @@ function Parser2({phonemeindex, phonemeLength, stress}) {
         // If at end, replace current phoneme with KX
         if ((flags[Y] & FLAG_DIP_YX) === 0 || Y === END) {
           // VOWELS AND DIPHTHONGS ENDING WITH IY SOUND flag set?
-          if (process.env.NODE_ENV === 'development') {
-            console.log(`${pos} K <VOWEL OR DIPHTHONG NOT ENDING WITH IY> -> KX <VOWEL OR DIPHTHONG NOT ENDING WITH IY>`);
-          }
+          logger().debug(() => `${pos} K <VOWEL OR DIPHTHONG NOT ENDING WITH IY> -> KX <VOWEL OR DIPHTHONG NOT ENDING WITH IY>`);
           phonemeindex[pos] = 75;
           p  = 75;
           pf = flags[p];
@@ -390,15 +384,9 @@ function Parser2({phonemeindex, phonemeLength, stress}) {
         //      S K -> S G
         //      S KX -> S GX
         // Examples: SPY, STY, SKY, SCOWL
-        if (process.env.NODE_ENV === 'development') {
-          console.log(
-            `${pos} RULE: S* %s%s -> S* %s%s`,
-            signInputTable1[p],
-            signInputTable2[p],
-            signInputTable1[p-12],
-            signInputTable2[p-12]
-          );
-        }
+        logger().debug(() =>
+          `${pos} RULE: S* ${String.fromCharCode(signInputTable1[p], signInputTable2[p])} -> S* ${String.fromCharCode(signInputTable1[p-12], signInputTable2[p-12])}`
+        );
         phonemeindex[pos] = p-12;
       } else if ((pf & FLAG_UNVOICED_STOPCONS) === 0) {
         p = phonemeindex[pos];
@@ -426,9 +414,7 @@ function Parser2({phonemeindex, phonemeLength, stress}) {
             p = phonemeindex[pos+2];
           }
           if ((flags[p] & FLAG_VOWEL) && !stress[pos+1]) {
-            if (process.env.NODE_ENV === 'development') {
-              console.log(`${pos} Soften T or D following vowel or ER and preceding a pause -> DX`);
-            }
+            logger().debug(() => `${pos} Soften T or D following vowel or ER and preceding a pause -> DX`);
             phonemeindex[pos] = 30;
           }
         }
@@ -553,15 +539,13 @@ function AdjustLengths({phonemeindex, phonemeLength}) {
       // test for fricative/unvoiced or not voiced
       if(((flags[index] & FLAG_FRICATIVE) === 0) || ((flags[index] & FLAG_VOICED) !== 0)) { //nochmal überprüfen
         // change phoneme length to (length * 1.5) + 1
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`${X} PRE phoneme ${String.fromCharCode(signInputTable1[phonemeindex[X]], signInputTable2[phonemeindex[X]])} length ${phonemeLength[X]}`);
-          console.log(`${X} Lengthen <FRICATIVE> or <VOICED> between <VOWEL> and <PUNCTUATION> by 1.5`);
-        }
+        logger().debug(() => `${X} PRE phoneme ${String.fromCharCode(signInputTable1[phonemeindex[X]], signInputTable2[phonemeindex[X]])} length ${phonemeLength[X]}`);
+        logger().debug(() => `${X} Lengthen <FRICATIVE> or <VOICED> between <VOWEL> and <PUNCTUATION> by 1.5`);
+        
         let A = phonemeLength[X];
         phonemeLength[X] = (A >> 1) + A + 1;
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`${X} POST phoneme ${String.fromCharCode(signInputTable1[phonemeindex[X]], signInputTable2[phonemeindex[X]])} length ${phonemeLength[X]}`);
-        }
+
+        logger().debug(() => `${X} POST phoneme ${String.fromCharCode(signInputTable1[phonemeindex[X]], signInputTable2[phonemeindex[X]])} length ${phonemeLength[X]}`);
       }
     } while (++X !== loopIndex);
     X++;
@@ -581,14 +565,12 @@ function AdjustLengths({phonemeindex, phonemeLength}) {
         if ((index === 18) || (index === 19)) { // 'RX', 'LX'
           index = phonemeindex[loopIndex+2];
           if ((flags[index] & FLAG_CONSONANT) !== 0) {
-            if (process.env.NODE_ENV === 'development') {
-              console.log(`${loopIndex} PRE phoneme ${String.fromCharCode(signInputTable1[phonemeindex[loopIndex]], signInputTable2[phonemeindex[loopIndex]])} length ${phonemeLength[loopIndex]}`);
-              console.log(`${loopIndex} <VOWEL> <RX | LX> <CONSONANT> - decrease length of vowel by 1`);
-            }
+            logger().debug(() => `${loopIndex} PRE phoneme ${String.fromCharCode(signInputTable1[phonemeindex[loopIndex]], signInputTable2[phonemeindex[loopIndex]])} length ${phonemeLength[loopIndex]}`);
+            logger().debug(() => `${loopIndex} <VOWEL> <RX | LX> <CONSONANT> - decrease length of vowel by 1`);
+            
             phonemeLength[loopIndex]--;
-            if (process.env.NODE_ENV === 'development') {
-              console.log(`${loopIndex} POST phoneme ${String.fromCharCode(signInputTable1[phonemeindex[loopIndex]], signInputTable2[phonemeindex[loopIndex]])} length ${phonemeLength[loopIndex]}`);
-            }
+
+            logger().debug(() => `${loopIndex} POST phoneme ${String.fromCharCode(signInputTable1[phonemeindex[loopIndex]], signInputTable2[phonemeindex[loopIndex]])} length ${phonemeLength[loopIndex]}`);
           }
         }
       } else { // Got here if not <VOWEL>
@@ -602,26 +584,22 @@ function AdjustLengths({phonemeindex, phonemeLength}) {
           if((flag & FLAG_UNVOICED_STOPCONS) !== 0) {
             // RULE: <VOWEL> <UNVOICED PLOSIVE>
             // <VOWEL> <P*, T*, K*, KX>
-            if (process.env.NODE_ENV === 'development') {
-              console.log(`${loopIndex} PRE phoneme ${String.fromCharCode(signInputTable1[phonemeindex[loopIndex]], signInputTable2[phonemeindex[loopIndex]])} length ${phonemeLength[loopIndex]}`);
-              console.log(`${loopIndex} <VOWEL> <UNVOICED PLOSIVE> - decrease vowel by 1/8th`);
-            }
+            logger().debug(() => `${loopIndex} PRE phoneme ${String.fromCharCode(signInputTable1[phonemeindex[loopIndex]], signInputTable2[phonemeindex[loopIndex]])} length ${phonemeLength[loopIndex]}`);
+            logger().debug(() => `${loopIndex} <VOWEL> <UNVOICED PLOSIVE> - decrease vowel by 1/8th`);
+            
             phonemeLength[loopIndex] -= (phonemeLength[loopIndex] >> 3);
-            if (process.env.NODE_ENV === 'development') {
-              console.log(`${loopIndex} POST phoneme ${String.fromCharCode(signInputTable1[phonemeindex[loopIndex]], signInputTable2[phonemeindex[loopIndex]])} length ${phonemeLength[loopIndex]}`);
-            }
+
+            logger().debug(() => `${loopIndex} POST phoneme ${String.fromCharCode(signInputTable1[phonemeindex[loopIndex]], signInputTable2[phonemeindex[loopIndex]])} length ${phonemeLength[loopIndex]}`);
           }
         } else {
-          if (process.env.NODE_ENV === 'development') {
-            console.log(`${loopIndex} PRE phoneme ${String.fromCharCode(signInputTable1[phonemeindex[loopIndex]], signInputTable2[phonemeindex[loopIndex]])} length ${phonemeLength[loopIndex]}`);
-            console.log(`${index} <VOWEL> <VOICED CONSONANT> - increase vowel by 1/2 + 1`);
-          }
+          logger().debug(() => `${loopIndex} PRE phoneme ${String.fromCharCode(signInputTable1[phonemeindex[loopIndex]], signInputTable2[phonemeindex[loopIndex]])} length ${phonemeLength[loopIndex]}`);
+          logger().debug(() => `${index} <VOWEL> <VOICED CONSONANT> - increase vowel by 1/2 + 1`);
+
           // decrease length
           let A = phonemeLength[loopIndex];
           phonemeLength[loopIndex] = (A >> 2) + A + 1;     // 5/4*A + 1
-          if (process.env.NODE_ENV === 'development') {
-            console.log(`${loopIndex} POST phoneme ${String.fromCharCode(signInputTable1[phonemeindex[loopIndex]], signInputTable2[phonemeindex[loopIndex]])} length ${phonemeLength[loopIndex]}`);
-          }
+
+          logger().debug(() => `${loopIndex} POST phoneme ${String.fromCharCode(signInputTable1[phonemeindex[loopIndex]], signInputTable2[phonemeindex[loopIndex]])} length ${phonemeLength[loopIndex]}`);
         }
       }
     } else if((flags[index] & FLAG_NASAL) !== 0) { // nasal?
@@ -630,9 +608,7 @@ function AdjustLengths({phonemeindex, phonemeLength}) {
       //       Set stop consonant length to 5
       index = phonemeindex[++X];
       if (index !== END && ((flags[index] & FLAG_STOPCONS) !== 0)) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`${X} RULE: <NASAL> <STOP CONSONANT> - set nasal = 5, consonant = 6`);
-        }
+        logger().debug(() => `${X} RULE: <NASAL> <STOP CONSONANT> - set nasal = 5, consonant = 6`);
         phonemeLength[X]   = 6; // set stop consonant length to 6
         phonemeLength[X-1] = 5; // set nasal length to 5
       }
@@ -645,9 +621,8 @@ function AdjustLengths({phonemeindex, phonemeLength}) {
       if (index !== END && ((flags[index] & FLAG_STOPCONS) !== 0)) {
         // FIXME, this looks wrong?
         // RULE: <UNVOICED STOP CONSONANT> {optional silence} <STOP CONSONANT>
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`${X} RULE: <UNVOICED STOP CONSONANT> {optional silence} <STOP CONSONANT> - shorten both to 1/2 + 1`);
-        }
+        logger().debug(() => `${X} RULE: <UNVOICED STOP CONSONANT> {optional silence} <STOP CONSONANT> - shorten both to 1/2 + 1`);
+
         phonemeLength[X]         = (phonemeLength[X] >> 1) + 1;
         phonemeLength[loopIndex] = (phonemeLength[loopIndex] >> 1) + 1;
       }
@@ -660,14 +635,12 @@ function AdjustLengths({phonemeindex, phonemeLength}) {
       // FIXME: changed with braces by CS, check if it is correct.
       // prior phoneme a stop consonant>
       if((flags[index] & FLAG_STOPCONS) !== 0) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`${X} PRE phoneme ${String.fromCharCode(signInputTable1[phonemeindex[X]], signInputTable2[phonemeindex[X]])} length ${phonemeLength[X]}`);
-          console.log(`${X} <LIQUID CONSONANT> <DIPHTHONG> - decrease by 2`);
-        }
+        logger().debug(() => `${X} PRE phoneme ${String.fromCharCode(signInputTable1[phonemeindex[X]], signInputTable2[phonemeindex[X]])} length ${phonemeLength[X]}`);
+        logger().debug(() => `${X} <LIQUID CONSONANT> <DIPHTHONG> - decrease by 2`);
+        
         phonemeLength[X] -= 2; // 20ms
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`${X} POST phoneme ${String.fromCharCode(signInputTable1[phonemeindex[X]], signInputTable2[phonemeindex[X]])} length ${phonemeLength[X]}`);
-        }
+
+        logger().debug(() => `${X} POST phoneme ${String.fromCharCode(signInputTable1[phonemeindex[X]], signInputTable2[phonemeindex[X]])} length ${phonemeLength[X]}`);
       }
     }
 
@@ -679,6 +652,7 @@ function AdjustLengths({phonemeindex, phonemeLength}) {
  *
  * @param {object}     data The data to populate.
  * @param {Uint8Array} data.phonemeindex
+ * @param {Uint8Array} data.phonemeLength
  * @param {Uint8Array} data.stress
  *
  * @return undefined
@@ -750,9 +724,7 @@ export default function Parser (_input) {
   if (!Parser1(input, result)) {
     return false;
   }
-  if (process.env.NODE_ENV === 'development') {
-    PrintPhonemes(result);
-  }
+  logger().debug(() => printPhonemes(result));
 
   Parser2(result);
   CopyStress(result);
@@ -769,52 +741,7 @@ export default function Parser (_input) {
 
   InsertBreath(result);
 
-  if (process.env.NODE_ENV === 'development') {
-    PrintPhonemes(result);
-  }
+  logger().debug(() => printPhonemes(result));
 
   return result;
-}
-
-/**
- * Debug printing.
- *
- * @param {object}     data The data to populate.
- * @param {Uint8Array} data.phonemeindex
- * @param {Uint8Array} data.phonemeLength
- * @param {Uint8Array} data.stress
- *
- * @return undefined
- */
-function PrintPhonemes ({phonemeindex, phonemeLength, stress}) {
-  function pad(num) {
-    let s = '000' + num;
-    return s.substr(s.length - 3);
-  }
-
-  let i = 0;
-  console.log('==================================');
-  console.log('Internal Phoneme presentation:');
-  console.log(' pos  idx  phoneme  length  stress');
-  console.log('----------------------------------');
-
-  while((phonemeindex[i] !== 255) && (i < 255))
-  {
-    const name = (phoneme) => {
-      if (phonemeindex[i] < 81) {
-        return String.fromCharCode(signInputTable1[phonemeindex[i]], signInputTable2[phonemeindex[i]]);
-      }
-      return '??'
-    };
-    console.log(
-      ' %s  %s  %s       %s     %s',
-      pad(i),
-      pad(phonemeindex[i]),
-      name(phonemeindex[i]),
-      pad(phonemeLength[i]),
-      pad(stress[i])
-    );
-    i++;
-  }
-  console.log('==================================');
 }

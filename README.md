@@ -53,6 +53,27 @@ const wav = sam.wav(text); //returns a Uint8Array
 | Extra-Terrestrial | 100   | 64    | 150    | 200   |
 | SAM               | 72    | 64    | 128    | 128   |
 
+### Logging
+To access debug log values, make use of the [@std/log package](https://jsr.io/@std/log) and listen to DEBUG/ERROR levels under the namespace "sam-js". Here's an example:
+
+```js
+import * as log from "jsr:@std/log";
+
+//prints to DEBUG log level and above to console
+log.setup({
+  handlers: {
+    console: new log.ConsoleHandler("DEBUG"),
+  },
+
+  loggers: {
+    "sam-js": {
+      level: "DEBUG",
+      handlers: ["console"],
+    },
+  },
+});
+```
+
 ## License
 
 The software is a reverse-engineered version of a commercial software published
