@@ -22,10 +22,13 @@ repo by [reticivis-net](https://github.com/reticivis-net).
 ## Usage
 
 ```js
-//for the latest version
-import SamJs from "https://raw.githubusercontent.com/ozaner/sam/refs/heads/master/src/index.js";
+//The latest release
+import SamJs from 'https://raw.githubusercontent.com/ozaner/sam/0.4.0/src/index.js';
 
-//for a specific commit
+//The most recent commit
+// import SamJs from "https://raw.githubusercontent.com/ozaner/sam/refs/heads/master/src/index.js";
+
+//A specific commit
 // import SamJs from "https://raw.githubusercontent.com/ozaner/sam/<HASH>/src/index.js";
 
 let text = "Hello world";
