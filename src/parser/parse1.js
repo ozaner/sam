@@ -1,4 +1,4 @@
-import { ANSI_RED, ANSI_RESET_COLOR, logger } from "../util.js"
+import { ANSI_RED, ANSI_RESET_COLOR, logger } from "../util.js";
 import { PhonemeNameTable, StressTable } from "./tables.js";
 
 /**
@@ -85,12 +85,12 @@ export const Parser1 = (input, addPhoneme, addStress) => {
   for (let srcPos = 0; srcPos < input.length; srcPos++) {
     logger().debug(() => {
       const tmp = input.toLowerCase();
-  
+
       // Create a formatted string with embedded ANSI color codes
       return `processing "${tmp.substr(0, srcPos)}${ANSI_RED}${
         tmp.substr(srcPos, 2).toUpperCase()
       }${ANSI_RESET_COLOR}${tmp.substr(srcPos + 2)}"`;
-    });    
+    });
     const sign1 = input[srcPos];
     const sign2 = input[srcPos + 1] || "";
     let match;

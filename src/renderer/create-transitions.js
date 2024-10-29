@@ -1,4 +1,4 @@
-import { logger } from "../util.js"
+import { logger } from "../util.js";
 import { blendRank, inBlendLength, outBlendLength } from "./tables.js";
 
 /**

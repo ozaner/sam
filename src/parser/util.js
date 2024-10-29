@@ -40,7 +40,9 @@ export const printPhonemes = (phonemeindex, phonemeLength, stress) => {
       }
       return "??";
     };
-    output += ` ${pad(i)}  ${pad(phonemeindex[i])}  ${name(phonemeindex[i])}       ${pad(phonemeLength[i])}     ${pad(stress[i])}\n`;
+    output += ` ${pad(i)}  ${pad(phonemeindex[i])}  ${
+      name(phonemeindex[i])
+    }       ${pad(phonemeLength[i])}     ${pad(stress[i])}\n`;
   }
   output += "==================================\n";
   return output;

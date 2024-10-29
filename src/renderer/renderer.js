@@ -31,7 +31,9 @@ export const Renderer = (phonemes, pitch, mouth, throat, speed, singmode) => {
 
   const [t, frequency, pitches, amplitude, sampledConsonantFlag] = sentences;
 
-  logger().debug(() => printOutput(pitches, frequency, amplitude, sampledConsonantFlag));
+  logger().debug(() =>
+    printOutput(pitches, frequency, amplitude, sampledConsonantFlag)
+  );
 
   ProcessFrames(
     Output,
@@ -57,10 +59,14 @@ const printOutput = (pitches, frequency, amplitude, sampledConsonantFlag) => {
   output += "Final data for speech output:\n";
   output += " flags ampl1 freq1 ampl2 freq2 ampl3 freq3 pitch\n";
   output += "------------------------------------------------\n";
-  
+
   // Loop through the data and format it into the string
   for (let i = 0; i < sampledConsonantFlag.length; i++) {
-    output += ` ${pad(sampledConsonantFlag[i])} ${pad(amplitude[0][i])} ${pad(frequency[0][i])} ${pad(amplitude[1][i])} ${pad(frequency[1][i])} ${pad(amplitude[2][i])} ${pad(frequency[2][i])} ${pad(pitches[i])}\n`;
+    output += ` ${pad(sampledConsonantFlag[i])} ${pad(amplitude[0][i])} ${
+      pad(frequency[0][i])
+    } ${pad(amplitude[1][i])} ${pad(frequency[1][i])} ${pad(amplitude[2][i])} ${
+      pad(frequency[2][i])
+    } ${pad(pitches[i])}\n`;
   }
 
   // Add the closing line to the output

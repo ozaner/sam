@@ -1,4 +1,4 @@
-import { logger } from "../util.js"
+import { logger } from "../util.js";
 import { PhonemeNameTable } from "./tables.js";
 import { Parser1 } from "./parse1.js";
 import { Parser2 } from "./parse2.js";
@@ -28,7 +28,11 @@ export const Parser = (input) => {
     return (pos === phonemeindex.length) ? null : phonemeindex[pos];
   };
   const setPhoneme = (pos, value) => {
-    logger().debug(`${pos} CHANGE: ${PhonemeNameTable[phonemeindex[pos]]} -> ${PhonemeNameTable[value]}`);
+    logger().debug(
+      `${pos} CHANGE: ${PhonemeNameTable[phonemeindex[pos]]} -> ${
+        PhonemeNameTable[value]
+      }`,
+    );
     phonemeindex[pos] = value;
   };
 
@@ -53,18 +57,24 @@ export const Parser = (input) => {
   };
   const getStress = (pos) => stress[pos] | 0;
   const setStress = (pos, stressValue) => {
-    logger().debug(() => 
-      `${pos} "${PhonemeNameTable[phonemeindex[pos]]}" SET STRESS: ${stress[pos]} -> ${stressValue}`
+    logger().debug(() =>
+      `${pos} "${PhonemeNameTable[phonemeindex[pos]]}" SET STRESS: ${
+        stress[pos]
+      } -> ${stressValue}`
     );
     stress[pos] = stressValue;
   };
   const getLength = (pos) => phonemeLength[pos] | 0;
   const setLength = (pos, length) => {
     logger().debug(() =>
-      `${pos} "${PhonemeNameTable[phonemeindex[pos]]}" SET LENGTH: ${phonemeLength[pos]} -> ${length}`
+      `${pos} "${PhonemeNameTable[phonemeindex[pos]]}" SET LENGTH: ${
+        phonemeLength[pos]
+      } -> ${length}`
     );
     if ((length & 128) !== 0) {
-      throw new Error("Got the flag 0x80, see CopyStress() and SetPhonemeLength() comments!");
+      throw new Error(
+        "Got the flag 0x80, see CopyStress() and SetPhonemeLength() comments!",
+      );
     }
     if (pos < 0 || pos > phonemeindex.length) {
       throw new Error("Out of bounds: " + pos);
@@ -87,7 +97,9 @@ export const Parser = (input) => {
     (value) => {
       logger().debug(() => {
         if ((value & 128) !== 0) {
-          throw new Error("Got the flag 0x80, see CopyStress() and SetPhonemeLength() comments!");
+          throw new Error(
+            "Got the flag 0x80, see CopyStress() and SetPhonemeLength() comments!",
+          );
         }
         return `Setting stress for prior phoneme: ${value}`;
       });
@@ -110,4 +122,3 @@ export const Parser = (input) => {
   )
     .filter((v) => v);
 };
-

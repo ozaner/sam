@@ -1,35 +1,35 @@
-import { logger } from "../../util.js"
+import { logger } from "../../util.js";
 import {
+  flags,
+  phonemeLengthTable,
+  phonemeStressedLengthTable,
   signInputTable1,
   signInputTable2,
   stressInputTable,
-  flags,
-  phonemeLengthTable,
-  phonemeStressedLengthTable
-} from './tables.js';
+} from "./tables.js";
 
 import {
-  pR,
-  pD,
-  pT,
-  FLAG_FRICATIVE,
-  FLAG_LIQUIC,
-  FLAG_NASAL,
+  FLAG_0008,
   FLAG_ALVEOLAR,
-  FLAG_PUNCT,
-  FLAG_VOWEL,
   FLAG_CONSONANT,
   FLAG_DIP_YX,
   FLAG_DIPHTHONG,
-  FLAG_0008,
-  FLAG_VOICED,
+  FLAG_FRICATIVE,
+  FLAG_LIQUIC,
+  FLAG_NASAL,
+  FLAG_PUNCT,
   FLAG_STOPCONS,
   FLAG_UNVOICED_STOPCONS,
-} from '../constants.js'
+  FLAG_VOICED,
+  FLAG_VOWEL,
+  pD,
+  pR,
+  pT,
+} from "../constants.js";
 
 const END = 255;
 
-import {text2Uint8Array} from '../../util.js';
+import { text2Uint8Array } from "../../util.js";
 import { printPhonemes } from "../util.js";
 
 function full_match(sign1, sign2) {
@@ -50,7 +50,7 @@ function full_match(sign1, sign2) {
   return -1;
 }
 
-function wild_match (sign1) {
+function wild_match(sign1) {
   let Y = 0;
   do {
     if (signInputTable2[Y] === 42 /* '*' */) {
@@ -122,19 +122,19 @@ function wild_match (sign1) {
  *
  * @return {Number}
  */
-function Parser1(input, {phonemeindex, stress}) {
+function Parser1(input, { phonemeindex, stress }) {
   let i;
 
   // Clear the stress table.
-  for(i=0; i<256; i++) {
+  for (i = 0; i < 256; i++) {
     stress[i] = 0;
   }
 
   let sign1;
   let sign2;
   let position = 0;
-  let srcpos   = 0;
-  while((sign1 = input[srcpos]) !== 155) { // 155 (\233) is end of line marker
+  let srcpos = 0;
+  while ((sign1 = input[srcpos]) !== 155) { // 155 (\233) is end of line marker
     sign2 = input[++srcpos];
     let match = 0;
     if ((match = full_match(sign1, sign2)) !== -1) {
@@ -148,13 +148,13 @@ function Parser1(input, {phonemeindex, stress}) {
       // Should be a stress character. Search through the
       // stress table backwards.
       match = 8; // End of stress table. FIXME: Don't hardcode.
-      while ((sign1 !== stressInputTable[match]) && (match>0)){ --match; }
+      while ((sign1 !== stressInputTable[match]) && (match > 0)) --match;
 
       if (match === 0) {
         return 0; // failure
       }
 
-      stress[position-1] = match; // Set stress for prior phoneme
+      stress[position - 1] = match; // Set stress for prior phoneme
     }
   } //while
 
@@ -176,17 +176,23 @@ function Parser1(input, {phonemeindex, stress}) {
  *
  * @return undefined
  */
-function Insert({phonemeindex, phonemeLength, stress}, position, index, length, stressValue) {
+function Insert(
+  { phonemeindex, phonemeLength, stress },
+  position,
+  index,
+  length,
+  stressValue,
+) {
   // ML : always keep last safe-guarding 255
-  for(let i = 253; i >= position; i--) {
-    phonemeindex[i+1]  = phonemeindex[i];
-    phonemeLength[i+1] = phonemeLength[i];
-    stress[i+1]        = stress[i];
+  for (let i = 253; i >= position; i--) {
+    phonemeindex[i + 1] = phonemeindex[i];
+    phonemeLength[i + 1] = phonemeLength[i];
+    stress[i + 1] = stress[i];
   }
 
-  phonemeindex[position]  = index;
+  phonemeindex[position] = index;
   phonemeLength[position] = length;
-  stress[position]        = stressValue;
+  stress[position] = stressValue;
 }
 
 /**
@@ -220,10 +226,10 @@ function Insert({phonemeindex, phonemeLength, stress}, position, index, length, 
  *
  * @return undefined
  */
-function Parser2({phonemeindex, phonemeLength, stress}) {
+function Parser2({ phonemeindex, phonemeLength, stress }) {
   const rule_alveolar_uw = (X) => {
     // ALVEOLAR flag set?
-    if ((flags[phonemeindex[X-1]] & FLAG_ALVEOLAR) !== 0) {
+    if ((flags[phonemeindex[X - 1]] & FLAG_ALVEOLAR) !== 0) {
       logger().debug(() => `${X} RULE: <ALVEOLAR> UW -> <ALVEOLAR> UX`);
       phonemeindex[X] = 16;
     }
@@ -231,24 +237,26 @@ function Parser2({phonemeindex, phonemeLength, stress}) {
 
   const rule_ch = (X) => {
     logger().debug(() => `${X} RULE: CH -> CH CH+1`);
-    Insert({phonemeindex, phonemeLength, stress}, X + 1, 43, 0, stress[X]);
+    Insert({ phonemeindex, phonemeLength, stress }, X + 1, 43, 0, stress[X]);
   };
 
   const rule_j = (X) => {
     logger().debug(() => `${X} RULE: J -> J J+1`);
-    Insert({phonemeindex, phonemeLength, stress}, X + 1, 45, 0, stress[X]);
+    Insert({ phonemeindex, phonemeLength, stress }, X + 1, 45, 0, stress[X]);
   };
 
   const rule_g = (pos) => {
     // G <VOWEL OR DIPHTHONG NOT ENDING WITH IY> -> GX <VOWEL OR DIPHTHONG NOT ENDING WITH IY>
     // Example: GO
 
-    const index = phonemeindex[pos+1];
+    const index = phonemeindex[pos + 1];
 
     // If diphthong ending with YX, move continue processing next phoneme
     if ((index !== 255) && ((flags[index] & FLAG_DIP_YX) === 0)) {
       // replace G with GX and continue processing next phoneme
-      logger().debug(() => `${pos} RULE: G <VOWEL OR DIPHTHONG NOT ENDING WITH IY> -> GX <VOWEL OR DIPHTHONG NOT ENDING WITH IY>`);
+      logger().debug(() =>
+        `${pos} RULE: G <VOWEL OR DIPHTHONG NOT ENDING WITH IY> -> GX <VOWEL OR DIPHTHONG NOT ENDING WITH IY>`
+      );
       phonemeindex[pos] = 63; // 'GX'
     }
   };
@@ -262,11 +270,19 @@ function Parser2({phonemeindex, phonemeLength, stress}) {
     const A = ((pf & FLAG_DIP_YX) !== 0) ? 21 : 20; // 'WX' = 20 'YX' = 21
 
     // Insert at WX or YX following, copying the stress
-    logger().debug(() => 
-      `${pos} insert ${A === 20 ? 'WX' : 'YX'} following diphthong ${A === 21 ? 'ending in IY sound' : 'NOT ending in IY sound'}`
+    logger().debug(() =>
+      `${pos} insert ${A === 20 ? "WX" : "YX"} following diphthong ${
+        A === 21 ? "ending in IY sound" : "NOT ending in IY sound"
+      }`
     );
 
-    Insert({phonemeindex, phonemeLength, stress}, (pos + 1) & 0xFF, A, 0, stress[pos]);
+    Insert(
+      { phonemeindex, phonemeLength, stress },
+      (pos + 1) & 0xFF,
+      A,
+      0,
+      stress[pos],
+    );
 
     if (p === 53 || p === 42 || p === 44) {
       if (p === 53) {
@@ -284,17 +300,30 @@ function Parser2({phonemeindex, phonemeLength, stress}) {
 
   const ChangeRule = (position, rule, mem60, stressValue) => {
     logger().debug(() =>
-      `${position} RULE: ${String.fromCharCode(signInputTable1[phonemeindex[position]], signInputTable2[phonemeindex[position]])} -> AX ${String.fromCharCode(signInputTable1[mem60], signInputTable2[mem60])}`
+      `${position} RULE: ${
+        String.fromCharCode(
+          signInputTable1[phonemeindex[position]],
+          signInputTable2[phonemeindex[position]],
+        )
+      } -> AX ${
+        String.fromCharCode(signInputTable1[mem60], signInputTable2[mem60])
+      }`
     );
     position = position & 0xFF;
     phonemeindex[position] = rule;
-    Insert({phonemeindex, phonemeLength, stress}, position + 1, mem60, 0, stressValue);
+    Insert(
+      { phonemeindex, phonemeLength, stress },
+      position + 1,
+      mem60,
+      0,
+      stressValue,
+    );
   };
 
   let pos = 0; //mem66;
   let p;
 
-  while((p = phonemeindex[pos]) !== END) {
+  while ((p = phonemeindex[pos]) !== END) {
     logger().debug(() =>
       `${pos}: ${String.fromCharCode(signInputTable1[p], signInputTable2[p])}`
     );
@@ -305,7 +334,7 @@ function Parser2({phonemeindex, phonemeLength, stress}) {
     }
 
     let pf = flags[p];
-    const prior = phonemeindex[pos-1];
+    const prior = phonemeindex[pos - 1];
 
     if ((pf & FLAG_DIPHTHONG) !== 0) {
       rule_diphthong(p, pf, pos, 0);
@@ -325,22 +354,26 @@ function Parser2({phonemeindex, phonemeLength, stress}) {
       // RULE:
       //       <STRESSED VOWEL> <SILENCE> <STRESSED VOWEL> -> <STRESSED VOWEL> <SILENCE> Q <VOWEL>
       // EXAMPLE: AWAY EIGHT
-      if (!phonemeindex[pos+1]) { // If following phoneme is a pause, get next
-        p = phonemeindex[pos+2];
-        if (p !== END && ((flags[p] & FLAG_VOWEL) !== 0) && stress[pos+2]) {
-          logger().debug(() => `${pos+2} Insert glottal stop between two stressed vowels with space between them`);
-          Insert({phonemeindex, phonemeLength, stress}, pos+2, 31, 0, 0); // 31 = 'Q'
+      if (!phonemeindex[pos + 1]) { // If following phoneme is a pause, get next
+        p = phonemeindex[pos + 2];
+        if (p !== END && ((flags[p] & FLAG_VOWEL) !== 0) && stress[pos + 2]) {
+          logger().debug(() =>
+            `${
+              pos + 2
+            } Insert glottal stop between two stressed vowels with space between them`
+          );
+          Insert({ phonemeindex, phonemeLength, stress }, pos + 2, 31, 0, 0); // 31 = 'Q'
         }
       }
     } else if (p === pR) { // RULES FOR PHONEMES BEFORE R
       if (prior === pT) {
         // Example: TRACK
         logger().debug(() => `${pos} RULE: T* R* -> CH R*`);
-        phonemeindex[pos-1] = 42;
+        phonemeindex[pos - 1] = 42;
       } else if (prior === pD) {
         // Example: DRY
         logger().debug(() => `${pos} RULE: D* R* -> J* R*`);
-        phonemeindex[pos-1] = 44;
+        phonemeindex[pos - 1] = 44;
       } else if ((flags[prior] & FLAG_VOWEL) !== 0) {
         // Example: ART
         logger().debug(() => `${pos} <VOWEL> R* -> <VOWEL> RX`);
@@ -359,16 +392,18 @@ function Parser2({phonemeindex, phonemeLength, stress}) {
     } else if (p === 60) {
       rule_g(pos);
     } else {
-      if (p === 72) {  // 'K'
+      if (p === 72) { // 'K'
         // K <VOWEL OR DIPHTHONG NOT ENDING WITH IY> -> KX <VOWEL OR DIPHTHONG NOT ENDING WITH IY>
         // Example: COW
-        const Y = phonemeindex[pos+1];
+        const Y = phonemeindex[pos + 1];
         // If at end, replace current phoneme with KX
         if ((flags[Y] & FLAG_DIP_YX) === 0 || Y === END) {
           // VOWELS AND DIPHTHONGS ENDING WITH IY SOUND flag set?
-          logger().debug(() => `${pos} K <VOWEL OR DIPHTHONG NOT ENDING WITH IY> -> KX <VOWEL OR DIPHTHONG NOT ENDING WITH IY>`);
+          logger().debug(() =>
+            `${pos} K <VOWEL OR DIPHTHONG NOT ENDING WITH IY> -> KX <VOWEL OR DIPHTHONG NOT ENDING WITH IY>`
+          );
           phonemeindex[pos] = 75;
-          p  = 75;
+          p = 75;
           pf = flags[p];
         }
       }
@@ -382,9 +417,16 @@ function Parser2({phonemeindex, phonemeLength, stress}) {
         //      S KX -> S GX
         // Examples: SPY, STY, SKY, SCOWL
         logger().debug(() =>
-          `${pos} RULE: S* ${String.fromCharCode(signInputTable1[p], signInputTable2[p])} -> S* ${String.fromCharCode(signInputTable1[p-12], signInputTable2[p-12])}`
+          `${pos} RULE: S* ${
+            String.fromCharCode(signInputTable1[p], signInputTable2[p])
+          } -> S* ${
+            String.fromCharCode(
+              signInputTable1[p - 12],
+              signInputTable2[p - 12],
+            )
+          }`
         );
-        phonemeindex[pos] = p-12;
+        phonemeindex[pos] = p - 12;
       } else if ((pf & FLAG_UNVOICED_STOPCONS) === 0) {
         p = phonemeindex[pos];
         if (p === 53) {
@@ -405,13 +447,15 @@ function Parser2({phonemeindex, phonemeLength, stress}) {
         //       <UNSTRESSED VOWEL> T <PAUSE> -> <UNSTRESSED VOWEL> DX <PAUSE>
         //       <UNSTRESSED VOWEL> D <PAUSE>  -> <UNSTRESSED VOWEL> DX <PAUSE>
         // Example: PARTY, TARDY
-        if ((flags[phonemeindex[pos-1]] & FLAG_VOWEL) !== 0) {
-          p = phonemeindex[pos+1];
+        if ((flags[phonemeindex[pos - 1]] & FLAG_VOWEL) !== 0) {
+          p = phonemeindex[pos + 1];
           if (!p) {
-            p = phonemeindex[pos+2];
+            p = phonemeindex[pos + 2];
           }
-          if ((flags[p] & FLAG_VOWEL) && !stress[pos+1]) {
-            logger().debug(() => `${pos} Soften T or D following vowel or ER and preceding a pause -> DX`);
+          if ((flags[p] & FLAG_VOWEL) && !stress[pos + 1]) {
+            logger().debug(() =>
+              `${pos} Soften T or D following vowel or ER and preceding a pause -> DX`
+            );
             phonemeindex[pos] = 30;
           }
         }
@@ -440,22 +484,22 @@ function Parser2({phonemeindex, phonemeLength, stress}) {
  *
  * @return undefined
  */
-function CopyStress({phonemeindex, stress}) {
+function CopyStress({ phonemeindex, stress }) {
   // loop thought all the phonemes to be output
   let pos = 0; //mem66
   let Y;
-  while((Y = phonemeindex[pos]) !== END) {
+  while ((Y = phonemeindex[pos]) !== END) {
     // if CONSONANT_FLAG set, skip - only vowels get stress
     if ((flags[Y] & 64) !== 0) {
-      Y = phonemeindex[pos+1];
+      Y = phonemeindex[pos + 1];
       // if the following phoneme is the end, or a vowel, skip
       if ((Y !== END) && (flags[Y] & 128) !== 0) {
         // get the stress value at the next position
-        Y = stress[pos+1];
+        Y = stress[pos + 1];
         if (Y && ((Y & 128) === 0)) {
           // if next phoneme is stressed, and a VOWEL OR ER
           // copy stress from next phoneme to this one
-          stress[pos] = Y+1;
+          stress[pos] = Y + 1;
         }
       }
     }
@@ -473,14 +517,15 @@ function CopyStress({phonemeindex, stress}) {
  *
  * @return undefined
  */
-function SetPhonemeLength({phonemeindex, phonemeLength, stress}) {
+function SetPhonemeLength({ phonemeindex, phonemeLength, stress }) {
   let position = 0;
-  while(phonemeindex[position] !== 255) {
+  while (phonemeindex[position] !== 255) {
     const A = stress[position];
-    if ((A === 0) || ((A&128) !== 0)) {
+    if ((A === 0) || ((A & 128) !== 0)) {
       phonemeLength[position] = phonemeLengthTable[phonemeindex[position]];
     } else {
-      phonemeLength[position] = phonemeStressedLengthTable[phonemeindex[position]];
+      phonemeLength[position] =
+        phonemeStressedLengthTable[phonemeindex[position]];
     }
     position++;
   }
@@ -503,7 +548,7 @@ function SetPhonemeLength({phonemeindex, phonemeLength, stress}) {
  *
  * @return undefined
  */
-function AdjustLengths({phonemeindex, phonemeLength}) {
+function AdjustLengths({ phonemeindex, phonemeLength }) {
   // LENGTHEN VOWELS PRECEDING PUNCTUATION
   //
   // Search for punctuation. If found, back up to the first vowel, then
@@ -515,16 +560,18 @@ function AdjustLengths({phonemeindex, phonemeLength}) {
   let X = 0;
   let index;
 
-  while((index = phonemeindex[X]) !== END) {
+  while ((index = phonemeindex[X]) !== END) {
     // not punctuation?
-    if((flags[index] & FLAG_PUNCT) === 0) {
+    if ((flags[index] & FLAG_PUNCT) === 0) {
       ++X;
       continue;
     }
 
     const loopIndex = X;
 
-    while (--X && ((flags[phonemeindex[X]] & FLAG_VOWEL) === 0)) { /* back up while not a vowel */ }
+    while (
+      --X && ((flags[phonemeindex[X]] & FLAG_VOWEL) === 0)
+    ) { /* back up while not a vowel */ }
     if (X === 0) {
       break;
     }
@@ -534,40 +581,75 @@ function AdjustLengths({phonemeindex, phonemeLength}) {
       index = phonemeindex[X];
 
       // test for fricative/unvoiced or not voiced
-      if(((flags[index] & FLAG_FRICATIVE) === 0) || ((flags[index] & FLAG_VOICED) !== 0)) { //nochmal überprüfen
+      if (
+        ((flags[index] & FLAG_FRICATIVE) === 0) ||
+        ((flags[index] & FLAG_VOICED) !== 0)
+      ) { //nochmal überprüfen
         // change phoneme length to (length * 1.5) + 1
-        logger().debug(() => `${X} PRE phoneme ${String.fromCharCode(signInputTable1[phonemeindex[X]], signInputTable2[phonemeindex[X]])} length ${phonemeLength[X]}`);
-        logger().debug(() => `${X} Lengthen <FRICATIVE> or <VOICED> between <VOWEL> and <PUNCTUATION> by 1.5`);
-        
+        logger().debug(() =>
+          `${X} PRE phoneme ${
+            String.fromCharCode(
+              signInputTable1[phonemeindex[X]],
+              signInputTable2[phonemeindex[X]],
+            )
+          } length ${phonemeLength[X]}`
+        );
+        logger().debug(() =>
+          `${X} Lengthen <FRICATIVE> or <VOICED> between <VOWEL> and <PUNCTUATION> by 1.5`
+        );
+
         const A = phonemeLength[X];
         phonemeLength[X] = (A >> 1) + A + 1;
 
-        logger().debug(() => `${X} POST phoneme ${String.fromCharCode(signInputTable1[phonemeindex[X]], signInputTable2[phonemeindex[X]])} length ${phonemeLength[X]}`);
+        logger().debug(() =>
+          `${X} POST phoneme ${
+            String.fromCharCode(
+              signInputTable1[phonemeindex[X]],
+              signInputTable2[phonemeindex[X]],
+            )
+          } length ${phonemeLength[X]}`
+        );
       }
     } while (++X !== loopIndex);
     X++;
-  }  // while
+  } // while
 
   // Similar to the above routine, but shorten vowels under some circumstances
 
   // Loop through all phonemes
-  let loopIndex=0;
+  let loopIndex = 0;
 
-  while((index = phonemeindex[loopIndex]) !== END) {
+  while ((index = phonemeindex[loopIndex]) !== END) {
     let X = loopIndex;
 
     if ((flags[index] & FLAG_VOWEL) !== 0) {
-      index = phonemeindex[loopIndex+1];
+      index = phonemeindex[loopIndex + 1];
       if ((flags[index] & FLAG_CONSONANT) === 0) {
         if ((index === 18) || (index === 19)) { // 'RX', 'LX'
-          index = phonemeindex[loopIndex+2];
+          index = phonemeindex[loopIndex + 2];
           if ((flags[index] & FLAG_CONSONANT) !== 0) {
-            logger().debug(() => `${loopIndex} PRE phoneme ${String.fromCharCode(signInputTable1[phonemeindex[loopIndex]], signInputTable2[phonemeindex[loopIndex]])} length ${phonemeLength[loopIndex]}`);
-            logger().debug(() => `${loopIndex} <VOWEL> <RX | LX> <CONSONANT> - decrease length of vowel by 1`);
-            
+            logger().debug(() =>
+              `${loopIndex} PRE phoneme ${
+                String.fromCharCode(
+                  signInputTable1[phonemeindex[loopIndex]],
+                  signInputTable2[phonemeindex[loopIndex]],
+                )
+              } length ${phonemeLength[loopIndex]}`
+            );
+            logger().debug(() =>
+              `${loopIndex} <VOWEL> <RX | LX> <CONSONANT> - decrease length of vowel by 1`
+            );
+
             phonemeLength[loopIndex]--;
 
-            logger().debug(() => `${loopIndex} POST phoneme ${String.fromCharCode(signInputTable1[phonemeindex[loopIndex]], signInputTable2[phonemeindex[loopIndex]])} length ${phonemeLength[loopIndex]}`);
+            logger().debug(() =>
+              `${loopIndex} POST phoneme ${
+                String.fromCharCode(
+                  signInputTable1[phonemeindex[loopIndex]],
+                  signInputTable2[phonemeindex[loopIndex]],
+                )
+              } length ${phonemeLength[loopIndex]}`
+            );
           }
         }
       } else { // Got here if not <VOWEL>
@@ -578,38 +660,72 @@ function AdjustLengths({phonemeindex, phonemeLength}) {
           // *, .*, ?*, ,*, -*, DX, S*, SH, F*, TH, /H, /X, CH, P*, T*, K*, KX
 
           // unvoiced plosive
-          if((flag & FLAG_UNVOICED_STOPCONS) !== 0) {
+          if ((flag & FLAG_UNVOICED_STOPCONS) !== 0) {
             // RULE: <VOWEL> <UNVOICED PLOSIVE>
             // <VOWEL> <P*, T*, K*, KX>
-            logger().debug(() => `${loopIndex} PRE phoneme ${String.fromCharCode(signInputTable1[phonemeindex[loopIndex]], signInputTable2[phonemeindex[loopIndex]])} length ${phonemeLength[loopIndex]}`);
-            logger().debug(() => `${loopIndex} <VOWEL> <UNVOICED PLOSIVE> - decrease vowel by 1/8th`);
-            
-            phonemeLength[loopIndex] -= (phonemeLength[loopIndex] >> 3);
+            logger().debug(() =>
+              `${loopIndex} PRE phoneme ${
+                String.fromCharCode(
+                  signInputTable1[phonemeindex[loopIndex]],
+                  signInputTable2[phonemeindex[loopIndex]],
+                )
+              } length ${phonemeLength[loopIndex]}`
+            );
+            logger().debug(() =>
+              `${loopIndex} <VOWEL> <UNVOICED PLOSIVE> - decrease vowel by 1/8th`
+            );
 
-            logger().debug(() => `${loopIndex} POST phoneme ${String.fromCharCode(signInputTable1[phonemeindex[loopIndex]], signInputTable2[phonemeindex[loopIndex]])} length ${phonemeLength[loopIndex]}`);
+            phonemeLength[loopIndex] -= phonemeLength[loopIndex] >> 3;
+
+            logger().debug(() =>
+              `${loopIndex} POST phoneme ${
+                String.fromCharCode(
+                  signInputTable1[phonemeindex[loopIndex]],
+                  signInputTable2[phonemeindex[loopIndex]],
+                )
+              } length ${phonemeLength[loopIndex]}`
+            );
           }
         } else {
-          logger().debug(() => `${loopIndex} PRE phoneme ${String.fromCharCode(signInputTable1[phonemeindex[loopIndex]], signInputTable2[phonemeindex[loopIndex]])} length ${phonemeLength[loopIndex]}`);
-          logger().debug(() => `${index} <VOWEL> <VOICED CONSONANT> - increase vowel by 1/2 + 1`);
+          logger().debug(() =>
+            `${loopIndex} PRE phoneme ${
+              String.fromCharCode(
+                signInputTable1[phonemeindex[loopIndex]],
+                signInputTable2[phonemeindex[loopIndex]],
+              )
+            } length ${phonemeLength[loopIndex]}`
+          );
+          logger().debug(() =>
+            `${index} <VOWEL> <VOICED CONSONANT> - increase vowel by 1/2 + 1`
+          );
 
           // decrease length
           const A = phonemeLength[loopIndex];
-          phonemeLength[loopIndex] = (A >> 2) + A + 1;     // 5/4*A + 1
+          phonemeLength[loopIndex] = (A >> 2) + A + 1; // 5/4*A + 1
 
-          logger().debug(() => `${loopIndex} POST phoneme ${String.fromCharCode(signInputTable1[phonemeindex[loopIndex]], signInputTable2[phonemeindex[loopIndex]])} length ${phonemeLength[loopIndex]}`);
+          logger().debug(() =>
+            `${loopIndex} POST phoneme ${
+              String.fromCharCode(
+                signInputTable1[phonemeindex[loopIndex]],
+                signInputTable2[phonemeindex[loopIndex]],
+              )
+            } length ${phonemeLength[loopIndex]}`
+          );
         }
       }
-    } else if((flags[index] & FLAG_NASAL) !== 0) { // nasal?
+    } else if ((flags[index] & FLAG_NASAL) !== 0) { // nasal?
       // RULE: <NASAL> <STOP CONSONANT>
       //       Set punctuation length to 6
       //       Set stop consonant length to 5
       index = phonemeindex[++X];
       if (index !== END && ((flags[index] & FLAG_STOPCONS) !== 0)) {
-        logger().debug(() => `${X} RULE: <NASAL> <STOP CONSONANT> - set nasal = 5, consonant = 6`);
-        phonemeLength[X]   = 6; // set stop consonant length to 6
-        phonemeLength[X-1] = 5; // set nasal length to 5
+        logger().debug(() =>
+          `${X} RULE: <NASAL> <STOP CONSONANT> - set nasal = 5, consonant = 6`
+        );
+        phonemeLength[X] = 6; // set stop consonant length to 6
+        phonemeLength[X - 1] = 5; // set nasal length to 5
       }
-    } else if((flags[index] & FLAG_STOPCONS) !== 0) { // (voiced) stop consonant?
+    } else if ((flags[index] & FLAG_STOPCONS) !== 0) { // (voiced) stop consonant?
       // RULE: <VOICED STOP CONSONANT> {optional silence} <STOP CONSONANT>
       //       Shorten both to (length/2 + 1)
 
@@ -618,26 +734,44 @@ function AdjustLengths({phonemeindex, phonemeLength}) {
       if (index !== END && ((flags[index] & FLAG_STOPCONS) !== 0)) {
         // FIXME, this looks wrong?
         // RULE: <UNVOICED STOP CONSONANT> {optional silence} <STOP CONSONANT>
-        logger().debug(() => `${X} RULE: <UNVOICED STOP CONSONANT> {optional silence} <STOP CONSONANT> - shorten both to 1/2 + 1`);
+        logger().debug(() =>
+          `${X} RULE: <UNVOICED STOP CONSONANT> {optional silence} <STOP CONSONANT> - shorten both to 1/2 + 1`
+        );
 
-        phonemeLength[X]         = (phonemeLength[X] >> 1) + 1;
+        phonemeLength[X] = (phonemeLength[X] >> 1) + 1;
         phonemeLength[loopIndex] = (phonemeLength[loopIndex] >> 1) + 1;
       }
     } else if ((flags[index] & FLAG_LIQUIC) !== 0) { // liquic consonant?
       // RULE: <VOICED NON-VOWEL> <DIPHTHONG>
       //       Decrease <DIPHTHONG> by 2
-      index = phonemeindex[X-1]; // prior phoneme;
+      index = phonemeindex[X - 1]; // prior phoneme;
 
       // FIXME: The debug code here breaks the rule.
       // FIXME: changed with braces by CS, check if it is correct.
       // prior phoneme a stop consonant>
-      if((flags[index] & FLAG_STOPCONS) !== 0) {
-        logger().debug(() => `${X} PRE phoneme ${String.fromCharCode(signInputTable1[phonemeindex[X]], signInputTable2[phonemeindex[X]])} length ${phonemeLength[X]}`);
-        logger().debug(() => `${X} <LIQUID CONSONANT> <DIPHTHONG> - decrease by 2`);
-        
+      if ((flags[index] & FLAG_STOPCONS) !== 0) {
+        logger().debug(() =>
+          `${X} PRE phoneme ${
+            String.fromCharCode(
+              signInputTable1[phonemeindex[X]],
+              signInputTable2[phonemeindex[X]],
+            )
+          } length ${phonemeLength[X]}`
+        );
+        logger().debug(() =>
+          `${X} <LIQUID CONSONANT> <DIPHTHONG> - decrease by 2`
+        );
+
         phonemeLength[X] -= 2; // 20ms
 
-        logger().debug(() => `${X} POST phoneme ${String.fromCharCode(signInputTable1[phonemeindex[X]], signInputTable2[phonemeindex[X]])} length ${phonemeLength[X]}`);
+        logger().debug(() =>
+          `${X} POST phoneme ${
+            String.fromCharCode(
+              signInputTable1[phonemeindex[X]],
+              signInputTable2[phonemeindex[X]],
+            )
+          } length ${phonemeLength[X]}`
+        );
       }
     }
 
@@ -646,7 +780,6 @@ function AdjustLengths({phonemeindex, phonemeLength}) {
 }
 
 /**
- *
  * @param {object}     data The data to populate.
  * @param {Uint8Array} data.phonemeindex
  * @param {Uint8Array} data.phonemeLength
@@ -654,35 +787,62 @@ function AdjustLengths({phonemeindex, phonemeLength}) {
  *
  * @return undefined
  */
-function Code41240({phonemeindex, phonemeLength, stress}) {
+function Code41240({ phonemeindex, phonemeLength, stress }) {
   let pos = -1;
   let index;
-  while (((index = phonemeindex[++pos]) !== END) && (pos < phonemeindex.length)) {
+  while (
+    ((index = phonemeindex[++pos]) !== END) && (pos < phonemeindex.length)
+  ) {
     index = phonemeindex[pos];
-    if ((flags[index] & FLAG_STOPCONS) === 0) { continue; }
+    if ((flags[index] & FLAG_STOPCONS) === 0) continue;
     if ((flags[index] & FLAG_UNVOICED_STOPCONS) === 0) {
-      Insert({phonemeindex, phonemeLength, stress}, pos+1, index+1, phonemeLengthTable[index+1], stress[pos]);
-      Insert({phonemeindex, phonemeLength, stress}, pos+2, index+2, phonemeLengthTable[index+2], stress[pos]);
+      Insert(
+        { phonemeindex, phonemeLength, stress },
+        pos + 1,
+        index + 1,
+        phonemeLengthTable[index + 1],
+        stress[pos],
+      );
+      Insert(
+        { phonemeindex, phonemeLength, stress },
+        pos + 2,
+        index + 2,
+        phonemeLengthTable[index + 2],
+        stress[pos],
+      );
       pos += 2;
       continue;
     }
     let X = pos;
     let A;
-    do { A = phonemeindex[++X]; } while ((A === 0) && (A < phonemeindex.length));
+    do {
+      A = phonemeindex[++X];
+    } while ((A === 0) && (A < phonemeindex.length));
 
     if (A !== 255) {
-      if ((flags[A] & FLAG_0008) !== 0) { continue; }
-      if ((A === 36) || (A === 37)) { continue; } // '/H' '/X'
+      if ((flags[A] & FLAG_0008) !== 0) continue;
+      if ((A === 36) || (A === 37)) continue; // '/H' '/X'
     }
-    Insert({phonemeindex, phonemeLength, stress}, pos+1, index+1, phonemeLengthTable[index+1], stress[pos]);
-    Insert({phonemeindex, phonemeLength, stress}, pos+2, index+2, phonemeLengthTable[index+2], stress[pos]);
+    Insert(
+      { phonemeindex, phonemeLength, stress },
+      pos + 1,
+      index + 1,
+      phonemeLengthTable[index + 1],
+      stress[pos],
+    );
+    Insert(
+      { phonemeindex, phonemeLength, stress },
+      pos + 2,
+      index + 2,
+      phonemeLengthTable[index + 2],
+      stress[pos],
+    );
     pos += 2;
   }
 }
 
 //FIXME: was this ever meant to be implemented?
 /**
- *
  * @param {object}     data The data to populate.
  * @param {Uint8Array} data.phonemeindex
  * @param {Uint8Array} data.phonemeLength
@@ -691,7 +851,7 @@ function Code41240({phonemeindex, phonemeLength, stress}) {
  * @return undefined
  */
 // deno-lint-ignore no-unused-vars
-function InsertBreath({phonemeindex, phonemeLength, stress}) {
+function InsertBreath({ phonemeindex, phonemeLength, stress }) {
 }
 
 /**
@@ -709,13 +869,13 @@ function InsertBreath({phonemeindex, phonemeLength, stress}) {
  *
  * @return {ParsedSpeechData|Boolean} The parsed data.
  */
-export default function Parser (_input) {
+export default function Parser(_input) {
   const input = text2Uint8Array(_input + String.fromCharCode(0x9b));
 
   const result = {
-    stress : new Uint8Array(256), //numbers from 0 to 8
+    stress: new Uint8Array(256), //numbers from 0 to 8
     phonemeLength: new Uint8Array(256), //tab40160
-    phonemeindex: new Uint8Array(256)
+    phonemeindex: new Uint8Array(256),
   };
 
   result.phonemeindex[255] = 32; //to prevent buffer overflow
@@ -731,7 +891,7 @@ export default function Parser (_input) {
   AdjustLengths(result);
   Code41240(result);
 
-  for (let i = 0;i<result.phonemeindex.length;i++) {
+  for (let i = 0; i < result.phonemeindex.length; i++) {
     if (result.phonemeindex[i] > 80) {
       result.phonemeindex[i] = END;
       break; // error: delete all behind it

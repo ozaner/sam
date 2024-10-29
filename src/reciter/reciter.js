@@ -1,4 +1,4 @@
-import { ANSI_RED, ANSI_RESET_COLOR, logger } from "../util.js"
+import { ANSI_RED, ANSI_RESET_COLOR, logger } from "../util.js";
 import * as tables from "./tables.js";
 
 import {
@@ -105,7 +105,9 @@ const reciterRule = (ruleString) => {
               if (!isOneOf(inputChar, TCS)) {
                 return false;
               }
-              logger().error(`Is always false but happened? Error char: ${inputChar}`);
+              logger().error(
+                `Is always false but happened? Error char: ${inputChar}`,
+              );
               return true;
             },
             // '^' - previous char must be a consonant.
@@ -172,7 +174,9 @@ const reciterRule = (ruleString) => {
                 return false;
               }
               // FIXME: This is illogical and can never be reached. Bug in orig. code? reciter.c:489 (pos37367)
-              logger().error(`This should not be possible. Error char: ${inputChar}`);
+              logger().error(
+                `This should not be possible. Error char: ${inputChar}`,
+              );
               return true;
             },
             // '^' - next char must be a consonant.
@@ -319,10 +323,12 @@ export const TextToPhonemes = (input) => {
   while ((inputPos < text.length) && (c++ < 10000)) {
     logger().debug(() => {
       const tmp = text.toLowerCase();
-      const formattedString = `processing "${tmp.substr(0, inputPos)}${ANSI_RED}${
-        tmp[inputPos].toUpperCase()
-      }${ANSI_RESET_COLOR}${tmp.substr(inputPos + 1)}"`;
-    
+      const formattedString = `processing "${
+        tmp.substr(0, inputPos)
+      }${ANSI_RED}${tmp[inputPos].toUpperCase()}${ANSI_RESET_COLOR}${
+        tmp.substr(inputPos + 1)
+      }"`;
+
       // Return the formatted string with embedded ANSI colors
       return formattedString;
     });
