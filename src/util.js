@@ -16,22 +16,7 @@ export const ANSI_RESET_COLOR = "\x1b[0m";
  */
 export const ToWavBuffer = (audiobuffer) => {
   // Calculate buffer size.
-  const realbuffer = new Uint8Array(
-    4 + // "RIFF"
-      4 + // uint32 filesize
-      4 + // "WAVE"
-      4 + // "fmt "
-      4 + // uint32 fmt length
-      2 + // uint16 fmt
-      2 + // uint16 channels
-      4 + // uint32 sample rate
-      4 + // uint32 bytes per second
-      2 + // uint16 block align
-      2 + // uint16 bits per sample
-      4 + // "data"
-      4 + // uint32 chunk length
-      audiobuffer.length,
-  );
+  const realbuffer = new Uint8Array(44 + audiobuffer.length);
 
   let pos = 0;
   const write = (buffer) => {
@@ -39,11 +24,14 @@ export const ToWavBuffer = (audiobuffer) => {
     pos += buffer.length;
   };
 
-  //RIFF header
+  //entire wav (44 + {buffer length} bytes)
+
+  //RIFF header (12 bytes)
   write(text2Uint8Array("RIFF")); // chunkID
-  write(Uint32ToUint8Array(audiobuffer.length + 12 + 16 + 8 - 8)); // ChunkSize
+  write(Uint32ToUint8Array(24 + 8 + audiobuffer.length)); // ChunkSize
   write(text2Uint8Array("WAVE")); // riffType
-  //format chunk
+  
+  //format chunk (24 bytes)
   write(text2Uint8Array("fmt "));
   write(Uint32ToUint8Array(16)); // ChunkSize
   write(Uint16ToUint8Array(1)); // wFormatTag - 1 = PCM
@@ -52,9 +40,10 @@ export const ToWavBuffer = (audiobuffer) => {
   write(Uint32ToUint8Array(22050)); // bytes/second
   write(Uint16ToUint8Array(1)); // blockalign
   write(Uint16ToUint8Array(8)); // bits per sample
-  //data chunk
+  
+  //data chunk (8 + {buffer length} bytes)
   write(text2Uint8Array("data"));
-  write(Uint32ToUint8Array(audiobuffer.length)); // buffer length
+  write(Uint32ToUint8Array(audiobuffer.length));
   write(audiobuffer);
 
   return realbuffer;

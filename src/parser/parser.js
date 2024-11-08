@@ -15,7 +15,7 @@ import { printPhonemes } from "./util.js";
  *
  * @param {string} input
  *
- * @return {Array|Boolean} The parsed data.
+ * @return {Array|false} The parsed data.
  */
 export const Parser = (input) => {
   if (!input) {

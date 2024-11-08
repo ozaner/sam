@@ -63,7 +63,7 @@ class SamJs {
    *
    * @param {string}  text       The text to render or phoneme string.
    * @param {boolean} [phonetic] Flag if the input text is already phonetic data.
-   * @return {Uint8Array|Boolean}
+   * @return {Uint8Array}
    */
   pcmU8(text, phonetic) {
     return SamProcess(this.ensurePhonetic(text, phonetic), this.opts);
@@ -74,7 +74,7 @@ class SamJs {
    *
    * @param {string}  text       The text to render or phoneme string.
    * @param {boolean} [phonetic] Flag if the input text is already phonetic data.
-   * @return {Float32Array|Boolean}
+   * @return {Float32Array}
    */
   pcmF32(text, phonetic) {
     return SamBuffer(this.ensurePhonetic(text, phonetic), this.opts);
@@ -85,7 +85,7 @@ class SamJs {
    *
    * @param {string}  text       The text to render or phoneme string.
    * @param {boolean} [phonetic] Flag if the input text is already phonetic data.
-   * @return {Uint8Array|false}
+   * @return {Uint8Array}
    */
   wav(text, phonetic) {
     return ToWavBuffer(this.pcmU8(text, phonetic));

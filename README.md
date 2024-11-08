@@ -23,7 +23,7 @@ repo by [reticivis-net](https://github.com/reticivis-net).
 
 ```js
 //The latest release
-import SamJs from 'https://raw.githubusercontent.com/ozaner/sam/0.4.0/src/index.js';
+import SamJs from 'https://raw.githubusercontent.com/ozaner/sam/0.5.0/src/index.js';
 
 //The most recent commit
 // import SamJs from "https://raw.githubusercontent.com/ozaner/sam/refs/heads/master/src/index.js";

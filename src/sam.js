@@ -18,12 +18,7 @@ import { Renderer } from "./renderer/renderer.js";
  * @return {Float32Array|Boolean}
  */
 export const SamBuffer = (input, options) => {
-  const buffer = SamProcess(input, options);
-  if (false === buffer) {
-    return false;
-  }
-
-  return Uint8ArrayToFloat32Array(buffer);
+  return Uint8ArrayToFloat32Array(SamProcess(input, options));
 };
 
 /**
@@ -38,12 +33,12 @@ export const SamBuffer = (input, options) => {
  * @param {Number}  [options.mouth]    Default 128.
  * @param {Number}  [options.throat]   Default 128.
  *
- * @return {Uint8Array|Boolean}
+ * @return {Uint8Array}
  */
 export const SamProcess = (input, options = {}) => {
   const parsed = Parser(input);
-  if (false === parsed) {
-    return false;
+  if (parsed === false) {
+    return new Uint8Array(0);
   }
 
   return Renderer(
